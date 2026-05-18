@@ -1,0 +1,17 @@
+[
+    {
+        "id": "TPL-001",
+        "name": "Orange Party (1 Foto)",
+        "background": "./assets/frames/orange-party.png",
+        "mode": "manual",
+        "elements": [
+            {
+                "type": "photo",
+                "x": 25,
+                "y": 150,
+                "w": 200,
+                "h": 150
+            }
+        ]
+    }
+]

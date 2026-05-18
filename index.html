@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orange Receipt - Full Journey</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;800;900&family=Quicksand:wght@500;700;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #f4f4f7;
+            --text-color: #2D2D2D;
+            --accent-color: #FF7B00;
+            --card-bg: #FFFFFF;
+            --dark-inspector: #1e1e1e;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            /* Mencegah pop-up "Copy/Share" saat tablet ditekan lama */
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #e5e5e5;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ─── Paksa semua tombol mewarisi font membulat ─── */
+        button,
+        input {
+            font-family: 'Nunito', 'Quicksand', sans-serif;
+        }
+
+        #app-container {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            background-color: var(--bg-color);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── Typography & UI Umum ─── */
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        p.subtitle {
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        /* ─── Tombol Pelanggan (Tebal, Bouncy & Playful) ─── */
+        .btn-pill {
+            background-color: var(--card-bg);
+            border: 3px solid var(--text-color);
+            color: var(--text-color);
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 0 var(--text-color);
+            margin: 10px auto;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .btn-pill:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 var(--text-color);
+        }
+
+        .btn-pill.primary {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 8px 0 #CC6200;
+        }
+
+        .btn-pill.primary:active {
+            box-shadow: 0 0 0 #CC6200;
+        }
+
+        /* ─── Tombol Khusus Admin (Minimalis & Profesional) ─── */
+        #screen-admin .btn-pill {
+            border: 1.5px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin: 0;
+            width: auto;
+            transition: all 0.2s ease;
+        }
+
+        #screen-admin .btn-pill:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+
+        #screen-admin .btn-pill.primary {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 2px 6px rgba(255, 123, 0, 0.3);
+        }
+
+        #screen-admin .btn-pill.primary:active {
+            box-shadow: none;
+        }
+
+        /* Glassmorphism Toolbar */
+        .floating-toolbar {
+            position: absolute;
+            top: 20px;
+            z-index: 50;
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .tool-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Property Inspector Inputs */
+        .inspector-label {
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .inspector-input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .inspector-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .bounce-emoji {
+            font-size: 6rem;
+            animation: bounce 2s infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-30px);
+            }
+
+            60% {
+                transform: translateY(-15px);
+            }
+        }
+
+        /* ─── Screen 2: Qty & Payment ─── */
+        .qty-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .btn-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 2.5rem;
+            font-weight: 900;
+            border: 3px solid var(--text-color);
+            background: white;
+            box-shadow: 0 6px 0 var(--text-color);
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-circle:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--text-color);
+        }
+
+        .qty-number {
+            font-size: 6rem;
+            font-weight: 900;
+            color: var(--accent-color);
+            width: 100px;
+        }
+
+        .qris-box {
+            width: 250px;
+            height: 250px;
+            border: 4px dashed var(--accent-color);
+            margin: 0 auto 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: white;
+            font-weight: bold;
+            color: #aaa;
+        }
+
+        .pin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+
+        .pin-dot-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            height: 30px;
+        }
+
+        .pin-dot {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 3px solid var(--text-color);
+        }
+
+        .pin-dot.filled {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* ─── Screen 5: Layout ─── */
+        .layout-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .layout-card {
+            background: white;
+            border: 4px solid #E0E0E0;
+            border-radius: 30px;
+            padding: 30px;
+            flex: 1;
+            max-width: 300px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .layout-card.selected {
+            border-color: var(--accent-color);
+            background-color: #FFF3E8;
+            transform: scale(1.05);
+        }
+
+        .layout-ill {
+            width: 100%;
+            height: 200px;
+            border: 3px dashed #CCC;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            background: #FAFAFA;
+        }
+
+        /* ─── Screen 6: Camera ─── */
+        #screen-camera {
+            padding: 20px;
+        }
+
+        .cam-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .cam-viewfinder {
+            flex: 1;
+            background: #d0d0d0;
+            border-radius: 30px;
+            border: 6px solid var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: filter 0.3s;
+        }
+
+        .thermal-active {
+            filter: grayscale(100%) contrast(160%) sepia(10%) brightness(110%);
+        }
+
+        .cam-controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .btn-filter {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--text-color);
+            background: white;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--text-color);
+        }
+
+        .btn-filter:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--text-color);
+        }
+
+        .btn-filter.active-filter {
+            background: var(--text-color);
+            color: white;
+        }
+
+        .btn-snap {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            border: 4px solid white;
+            outline: 4px solid var(--text-color);
+            color: white;
+            font-weight: 900;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .btn-snap:active {
+            transform: scale(0.9);
+        }
+
+        .countdown {
+            position: absolute;
+            font-size: 15rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .qr-final-box {
+            width: 200px;
+            height: 200px;
+            background: white;
+            border: 4px solid var(--text-color);
+            border-radius: 20px;
+            margin: 0 auto 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+
+        /* ─── STYLING KHUSUS LAYAR STANDBY (V0.DEV DESIGN) ─── */
+        #screen-standby {
+            background: linear-gradient(135deg, #A04000 0%, #8B3500 50%, #6B2A00 100%);
+            position: absolute;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            font-family: 'Nunito', system-ui, sans-serif;
+        }
+
+        #depth-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.22) 100%);
+        }
+
+        /* Floating slices */
+        .slice-wrap {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .slice-tl {
+            top: -24px;
+            left: -40px;
+        }
+
+        .slice-tr {
+            top: -16px;
+            right: -56px;
+        }
+
+        .slice-bl {
+            bottom: -40px;
+            left: -32px;
+        }
+
+        .slice-br {
+            bottom: -32px;
+            right: -48px;
+        }
+
+        .slice-ml {
+            top: 33%;
+            left: -64px;
+        }
+
+        .slice-mr {
+            top: 50%;
+            right: -56px;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(3deg);
+            }
+        }
+
+        @keyframes float-reverse {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(15px) rotate(-3deg);
+            }
+        }
+
+        .anim-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .anim-float-slow {
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .anim-float-reverse {
+            animation: float-reverse 7s ease-in-out infinite;
+        }
+
+        /* Center content Standby */
+        #content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 0 2rem;
+        }
+
+        /* 3D Orange Animations (Lompat Asli) */
+        @keyframes vertical-bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-45px);
+            }
+
+            60% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.5));
+            }
+
+            50% {
+                filter: drop-shadow(0 35px 70px rgba(0, 0, 0, 0.65));
+            }
+        }
+
+        #orange-wrap {
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.5));
+            animation: vertical-bounce 2.5s infinite;
+            transition: transform 0.15s ease;
+            cursor: pointer;
+        }
+
+        #orange-wrap.hovering {
+            animation: vertical-bounce 1.5s infinite, pulse-glow 1.5s infinite;
+        }
+
+        #orange-wrap.pressed {
+            animation: none;
+            transform: scale(0.85) !important;
+        }
+
+        /* Standby Typography */
+        #title-standby {
+            font-size: clamp(2.8rem, 7vw, 5rem);
+            font-weight: 900;
+            color: #ffffff;
+            text-align: center;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+            line-height: 1.1;
+        }
+
+        #subtitle-standby {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-weight: 600;
+            color: rgba(255, 248, 230, 0.88);
+            text-align: center;
+            letter-spacing: 0.04em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #tap-indicator {
+            margin-top: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 248, 230, 0.55);
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse-dot 1.8s ease-in-out infinite;
+        }
+
+        .dot:last-child {
+            animation-delay: 0.9s;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(0.75);
+            }
+        }
+
+        /* Ripple Effect */
+        #ripple {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        #ripple.active {
+            opacity: 1;
+        }
+
+        #ripple-ring {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 200, 100, 0.45) 0%, transparent 70%);
+            animation: ping 0.5s ease-out forwards;
+        }
+
+        @keyframes ping {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        /* Memastikan layar krem muncul di atas */
+        .screen:not(#screen-standby) {
+            background-color: var(--bg-color);
+            z-index: 2;
+        }
+
+        /* Animasi Transisi Membesar */
+        .screen.circle-expand {
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10 !important;
+            animation: expandCircle 0.8s cubic-bezier(0.64, 0.04, 0.35, 1) forwards !important;
+        }
+
+        @keyframes expandCircle {
+            0% {
+                clip-path: circle(0% at 50% 40%);
+                opacity: 1;
+            }
+
+            100% {
+                clip-path: circle(150% at 50% 40%);
+                opacity: 1;
+            }
+        }
+
+        /* Efek Transisi Sidebar */
+        #admin-sidebar {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* State saat Sidebar disembunyikan */
+        #admin-sidebar.collapsed {
+            width: 0 !important;
+            padding: 0 !important;
+            opacity: 0;
+        }
+
+        /* --- STYLE KHUSUS FRAME LIBRARY --- */
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            padding-bottom: 30px;
+        }
+
+        .frame-card {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .frame-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-color);
+        }
+
+        .frame-card.active-frame {
+            border: 3px solid var(--accent-color);
+            background: #FFF9F2;
+        }
+
+        .frame-preview {
+            height: 250px;
+            background-color: #f5f5f5;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-bottom: 2px solid #eee;
+            position: relative;
+        }
+
+        .badge-active {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 900;
+            padding: 5px 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .frame-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .frame-actions {
+            display: flex;
+            gap: 10px;
+            padding: 0 15px 15px 15px;
+        }
+
+        .admin-nav-item {
+            padding: 10px 20px;
+            border-radius: 30px;
+            margin: 0;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #888;
+            transition: 0.3s;
+        }
+
+        .admin-nav-item.active {
+            background: var(--accent-color);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app-container">
+
+        <div id="screen-standby" class="screen active" style="padding: 0;">
+
+            <div id="depth-overlay"></div>
+
+            <div class="slice-wrap slice-tl anim-float-slow"><svg width="300" height="300" viewBox="0 0 200 200"
+                    fill="none" style="opacity:0.35; transform:rotate(-25deg);">
+                    <defs>
+                        <linearGradient id="rg-tl" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFB020" />
+                            <stop offset="100%" stop-color="#E68A00" />
+                        </linearGradient>
+                        <linearGradient id="sg-tl" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFCC66" />
+                            <stop offset="40%" stop-color="#FFA500" />
+                            <stop offset="100%" stop-color="#FF7F00" />
+                        </linearGradient>
+                        <filter id="glow-tl" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <g filter="url(#glow-tl)">
+                        <path d="M 20 100 A 80 80 0 0 1 180 100 L 100 100 Z" fill="url(#rg-tl)" />
+                        <path d="M 28 100 A 72 72 0 0 1 172 100 L 100 100 Z" fill="url(#sg-tl)" />
+                        <path d="M 24 100 A 76 76 0 0 1 176 100 L 172 100 A 72 72 0 0 0 28 100 Z"
+                            fill="rgba(255,255,245,0.75)" />
+                    </g>
+                    <line x1="100" y1="100" x2="30.4" y2="71.6" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="50.0" y2="38.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="79.4" y2="15.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="113.0" y2="6.2" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="146.0" y2="14.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="168.8" y2="37.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="179.4" y2="67.8" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <circle cx="100" cy="100" r="10" fill="rgba(255,255,245,0.6)" />
+                    <ellipse cx="55" cy="72" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(66 55 72)" />
+                    <ellipse cx="73" cy="46" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(50 73 46)" />
+                    <ellipse cx="97" cy="31" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(35 97 31)" />
+                    <ellipse cx="123" cy="28" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(20 123 28)" />
+                    <ellipse cx="145" cy="40" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(6 145 40)" />
+                    <ellipse cx="160" cy="60" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(-9 160 60)" />
+                </svg></div>
+            <div class="slice-wrap slice-tr anim-float"><svg width="340" height="340" viewBox="0 0 200 200" fill="none"
+                    style="opacity:0.32; transform:rotate(45deg);">
+                    <defs>
+                        <linearGradient id="rg-tr" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFB020" />
+                            <stop offset="100%" stop-color="#E68A00" />
+                        </linearGradient>
+                        <linearGradient id="sg-tr" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFCC66" />
+                            <stop offset="40%" stop-color="#FFA500" />
+                            <stop offset="100%" stop-color="#FF7F00" />
+                        </linearGradient>
+                        <filter id="glow-tr" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <g filter="url(#glow-tr)">
+                        <path d="M 20 100 A 80 80 0 0 1 180 100 L 100 100 Z" fill="url(#rg-tr)" />
+                        <path d="M 28 100 A 72 72 0 0 1 172 100 L 100 100 Z" fill="url(#sg-tr)" />
+                        <path d="M 24 100 A 76 76 0 0 1 176 100 L 172 100 A 72 72 0 0 0 28 100 Z"
+                            fill="rgba(255,255,245,0.75)" />
+                    </g>
+                    <line x1="100" y1="100" x2="30.4" y2="71.6" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="50.0" y2="38.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="79.4" y2="15.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="113.0" y2="6.2" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="146.0" y2="14.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="168.8" y2="37.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="179.4" y2="67.8" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <circle cx="100" cy="100" r="10" fill="rgba(255,255,245,0.6)" />
+                    <ellipse cx="55" cy="72" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(66 55 72)" />
+                    <ellipse cx="73" cy="46" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(50 73 46)" />
+                    <ellipse cx="97" cy="31" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(35 97 31)" />
+                    <ellipse cx="123" cy="28" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(20 123 28)" />
+                    <ellipse cx="145" cy="40" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(6 145 40)" />
+                    <ellipse cx="160" cy="60" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(-9 160 60)" />
+                </svg></div>
+            <div class="slice-wrap slice-bl anim-float-reverse"><svg width="320" height="320" viewBox="0 0 200 200"
+                    fill="none" style="opacity:0.33; transform:rotate(-120deg);">
+                    <defs>
+                        <linearGradient id="rg-bl" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFB020" />
+                            <stop offset="100%" stop-color="#E68A00" />
+                        </linearGradient>
+                        <linearGradient id="sg-bl" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFCC66" />
+                            <stop offset="40%" stop-color="#FFA500" />
+                            <stop offset="100%" stop-color="#FF7F00" />
+                        </linearGradient>
+                        <filter id="glow-bl" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <g filter="url(#glow-bl)">
+                        <path d="M 20 100 A 80 80 0 0 1 180 100 L 100 100 Z" fill="url(#rg-bl)" />
+                        <path d="M 28 100 A 72 72 0 0 1 172 100 L 100 100 Z" fill="url(#sg-bl)" />
+                        <path d="M 24 100 A 76 76 0 0 1 176 100 L 172 100 A 72 72 0 0 0 28 100 Z"
+                            fill="rgba(255,255,245,0.75)" />
+                    </g>
+                    <line x1="100" y1="100" x2="30.4" y2="71.6" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="50.0" y2="38.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="79.4" y2="15.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="113.0" y2="6.2" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="146.0" y2="14.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="168.8" y2="37.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="179.4" y2="67.8" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <circle cx="100" cy="100" r="10" fill="rgba(255,255,245,0.6)" />
+                    <ellipse cx="55" cy="72" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(66 55 72)" />
+                    <ellipse cx="73" cy="46" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(50 73 46)" />
+                    <ellipse cx="97" cy="31" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(35 97 31)" />
+                    <ellipse cx="123" cy="28" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(20 123 28)" />
+                    <ellipse cx="145" cy="40" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(6 145 40)" />
+                    <ellipse cx="160" cy="60" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(-9 160 60)" />
+                </svg></div>
+            <div class="slice-wrap slice-br anim-float-slow"><svg width="280" height="280" viewBox="0 0 200 200"
+                    fill="none" style="opacity:0.36; transform:rotate(150deg);">
+                    <defs>
+                        <linearGradient id="rg-br" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFB020" />
+                            <stop offset="100%" stop-color="#E68A00" />
+                        </linearGradient>
+                        <linearGradient id="sg-br" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFCC66" />
+                            <stop offset="40%" stop-color="#FFA500" />
+                            <stop offset="100%" stop-color="#FF7F00" />
+                        </linearGradient>
+                        <filter id="glow-br" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <g filter="url(#glow-br)">
+                        <path d="M 20 100 A 80 80 0 0 1 180 100 L 100 100 Z" fill="url(#rg-br)" />
+                        <path d="M 28 100 A 72 72 0 0 1 172 100 L 100 100 Z" fill="url(#sg-br)" />
+                        <path d="M 24 100 A 76 76 0 0 1 176 100 L 172 100 A 72 72 0 0 0 28 100 Z"
+                            fill="rgba(255,255,245,0.75)" />
+                    </g>
+                    <line x1="100" y1="100" x2="30.4" y2="71.6" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="50.0" y2="38.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="79.4" y2="15.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="113.0" y2="6.2" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="146.0" y2="14.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="168.8" y2="37.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="179.4" y2="67.8" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <circle cx="100" cy="100" r="10" fill="rgba(255,255,245,0.6)" />
+                    <ellipse cx="55" cy="72" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(66 55 72)" />
+                    <ellipse cx="73" cy="46" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(50 73 46)" />
+                    <ellipse cx="97" cy="31" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(35 97 31)" />
+                    <ellipse cx="123" cy="28" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(20 123 28)" />
+                    <ellipse cx="145" cy="40" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(6 145 40)" />
+                    <ellipse cx="160" cy="60" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(-9 160 60)" />
+                </svg></div>
+            <div class="slice-wrap slice-ml anim-float"><svg width="220" height="220" viewBox="0 0 200 200" fill="none"
+                    style="opacity:0.28; transform:rotate(-70deg);">
+                    <defs>
+                        <linearGradient id="rg-ml" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFB020" />
+                            <stop offset="100%" stop-color="#E68A00" />
+                        </linearGradient>
+                        <linearGradient id="sg-ml" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFCC66" />
+                            <stop offset="40%" stop-color="#FFA500" />
+                            <stop offset="100%" stop-color="#FF7F00" />
+                        </linearGradient>
+                        <filter id="glow-ml" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <g filter="url(#glow-ml)">
+                        <path d="M 20 100 A 80 80 0 0 1 180 100 L 100 100 Z" fill="url(#rg-ml)" />
+                        <path d="M 28 100 A 72 72 0 0 1 172 100 L 100 100 Z" fill="url(#sg-ml)" />
+                        <path d="M 24 100 A 76 76 0 0 1 176 100 L 172 100 A 72 72 0 0 0 28 100 Z"
+                            fill="rgba(255,255,245,0.75)" />
+                    </g>
+                    <line x1="100" y1="100" x2="30.4" y2="71.6" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="50.0" y2="38.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="79.4" y2="15.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="113.0" y2="6.2" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="146.0" y2="14.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="168.8" y2="37.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="179.4" y2="67.8" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <circle cx="100" cy="100" r="10" fill="rgba(255,255,245,0.6)" />
+                    <ellipse cx="55" cy="72" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(66 55 72)" />
+                    <ellipse cx="73" cy="46" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(50 73 46)" />
+                    <ellipse cx="97" cy="31" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(35 97 31)" />
+                    <ellipse cx="123" cy="28" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(20 123 28)" />
+                    <ellipse cx="145" cy="40" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(6 145 40)" />
+                    <ellipse cx="160" cy="60" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(-9 160 60)" />
+                </svg></div>
+            <div class="slice-wrap slice-mr anim-float-reverse"><svg width="240" height="240" viewBox="0 0 200 200"
+                    fill="none" style="opacity:0.30; transform:rotate(100deg);">
+                    <defs>
+                        <linearGradient id="rg-mr" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFB020" />
+                            <stop offset="100%" stop-color="#E68A00" />
+                        </linearGradient>
+                        <linearGradient id="sg-mr" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFCC66" />
+                            <stop offset="40%" stop-color="#FFA500" />
+                            <stop offset="100%" stop-color="#FF7F00" />
+                        </linearGradient>
+                        <filter id="glow-mr" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <g filter="url(#glow-mr)">
+                        <path d="M 20 100 A 80 80 0 0 1 180 100 L 100 100 Z" fill="url(#rg-mr)" />
+                        <path d="M 28 100 A 72 72 0 0 1 172 100 L 100 100 Z" fill="url(#sg-mr)" />
+                        <path d="M 24 100 A 76 76 0 0 1 176 100 L 172 100 A 72 72 0 0 0 28 100 Z"
+                            fill="rgba(255,255,245,0.75)" />
+                    </g>
+                    <line x1="100" y1="100" x2="30.4" y2="71.6" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="50.0" y2="38.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="79.4" y2="15.4" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="113.0" y2="6.2" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="146.0" y2="14.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="168.8" y2="37.0" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <line x1="100" y1="100" x2="179.4" y2="67.8" stroke="rgba(255,255,245,0.7)" stroke-width="2.5" />
+                    <circle cx="100" cy="100" r="10" fill="rgba(255,255,245,0.6)" />
+                    <ellipse cx="55" cy="72" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(66 55 72)" />
+                    <ellipse cx="73" cy="46" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(50 73 46)" />
+                    <ellipse cx="97" cy="31" rx="7" ry="14" fill="rgba(255,220,130,0.5)" transform="rotate(35 97 31)" />
+                    <ellipse cx="123" cy="28" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(20 123 28)" />
+                    <ellipse cx="145" cy="40" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(6 145 40)" />
+                    <ellipse cx="160" cy="60" rx="7" ry="14" fill="rgba(255,220,130,0.5)"
+                        transform="rotate(-9 160 60)" />
+                </svg></div>
+
+            <div id="content">
+                <div id="orange-wrap">
+                    <svg width="220" height="220" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="orangeMain" cx="35%" cy="30%" r="70%" fx="30%" fy="25%">
+                                <stop offset="0%" stop-color="#FFD93D" />
+                                <stop offset="25%" stop-color="#FF9F1C" />
+                                <stop offset="50%" stop-color="#FF8C00" />
+                                <stop offset="75%" stop-color="#E67300" />
+                                <stop offset="100%" stop-color="#CC5500" />
+                            </radialGradient>
+                            <radialGradient id="highlight" cx="30%" cy="25%" r="40%">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0.6)" />
+                                <stop offset="50%" stop-color="rgba(255,255,255,0.2)" />
+                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                            </radialGradient>
+                            <radialGradient id="secondaryHighlight" cx="70%" cy="70%" r="30%">
+                                <stop offset="0%" stop-color="rgba(255,200,100,0.3)" />
+                                <stop offset="100%" stop-color="rgba(255,200,100,0)" />
+                            </radialGradient>
+                            <linearGradient id="stemGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#4A7C23" />
+                                <stop offset="50%" stop-color="#3D6B1E" />
+                                <stop offset="100%" stop-color="#2D5016" />
+                            </linearGradient>
+                            <linearGradient id="leafGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#5FA534" />
+                                <stop offset="40%" stop-color="#4A8C2A" />
+                                <stop offset="100%" stop-color="#3A7020" />
+                            </linearGradient>
+                            <pattern id="dimples" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+                                <circle cx="6" cy="6" r="1.5" fill="rgba(180,100,0,0.15)" />
+                            </pattern>
+                        </defs>
+                        <ellipse cx="100" cy="105" rx="75" ry="72" fill="url(#orangeMain)" />
+                        <ellipse cx="100" cy="105" rx="74" ry="71" fill="url(#dimples)" />
+                        <ellipse cx="75" cy="75" rx="35" ry="30" fill="url(#highlight)" />
+                        <ellipse cx="120" cy="140" rx="25" ry="20" fill="url(#secondaryHighlight)" />
+                        <ellipse cx="100" cy="105" rx="75" ry="72" fill="none" stroke="rgba(255,200,100,0.2)"
+                            stroke-width="2" />
+                        <ellipse cx="100" cy="165" rx="8" ry="5" fill="rgba(150,80,0,0.4)" />
+                        <ellipse cx="100" cy="164" rx="5" ry="3" fill="rgba(120,60,0,0.5)" />
+                        <ellipse cx="100" cy="38" rx="6" ry="8" fill="url(#stemGradient)" />
+                        <ellipse cx="100" cy="36" rx="4" ry="3" fill="rgba(80,140,40,0.6)" />
+                        <path d="M 103 35 Q 130 20 145 30 Q 135 35 120 38 Q 110 40 103 38 Z"
+                            fill="url(#leafGradient)" />
+                        <path d="M 105 36 Q 120 30 138 32" stroke="rgba(60,100,30,0.5)" stroke-width="1" fill="none" />
+                        <path d="M 108 33 Q 125 24 140 30" stroke="rgba(150,200,100,0.3)" stroke-width="2"
+                            fill="none" />
+                    </svg>
+                </div>
+
+                <h1 id="title-standby">Orange Receipt</h1>
+                <p id="subtitle-standby">Squeeze to Start!</p>
+
+                <div id="tap-indicator">
+                    <span class="dot"></span><span>Tap anywhere to begin</span><span class="dot"></span>
+                </div>
+            </div>
+
+            <div id="ripple">
+                <div id="ripple-ring"></div>
+            </div>
+        </div>
+
+        <div id="screen-qty" class="screen">
+            <h1>Berapa Lembar?</h1>
+            <p class="subtitle">Pilih jumlah struk kebahagiaanmu!</p>
+            <div class="qty-wrapper">
+                <button class="btn-circle" onclick="updateQty(-1)">-</button>
+                <div class="qty-number" id="qty-val">1</div>
+                <button class="btn-circle" onclick="updateQty(1)">+</button>
+            </div>
+            <p class="subtitle" style="color: var(--text-color); font-weight: 900; font-size: 2rem;">Total: Rp <span
+                    id="price-val">25.000</span></p>
+            <button class="btn-pill primary" onclick="navTo('screen-qris')">Bayar QRIS 📸</button>
+            <button class="btn-pill" onclick="navTo('screen-pin')">Bayar Cash 💵</button>
+        </div>
+
+        <div id="screen-qris" class="screen">
+            <h1>Scan di sini ya!</h1>
+            <p class="subtitle">Buka aplikasi m-banking atau e-wallet kamu.</p>
+            <div class="qris-box">[ Gambar QRIS ]</div>
+            <button class="btn-pill primary" onclick="navTo('screen-layout')">Simulasi: Anggap Terbayar ✨</button>
+            <button class="btn-pill"
+                style="margin-top: 20px; font-size: 1rem; border:none; box-shadow:none; background:transparent;"
+                onclick="navTo('screen-qty')">Batalkan</button>
+        </div>
+
+        <div id="screen-pin" class="screen">
+            <div class="bounce-emoji" onclick="showPinPad()" style="cursor: default;">🍊</div>
+            <h1 id="cash-title">Bayar di Kasir Ya!</h1>
+            <p class="subtitle" id="cash-subtitle">Selesaikan pembayaran di kasir, nanti staf kami akan mengaktifkan
+                mesinnya.</p>
+            <div id="pin-area" style="display: none; margin-top: 20px;">
+                <div class="pin-dot-container">
+                    <div class="pin-dot" id="dot-1"></div>
+                    <div class="pin-dot" id="dot-2"></div>
+                    <div class="pin-dot" id="dot-3"></div>
+                    <div class="pin-dot" id="dot-4"></div>
+                </div>
+                <div class="pin-grid">
+                    <button class="btn-circle" onclick="addPin(1)">1</button><button class="btn-circle"
+                        onclick="addPin(2)">2</button><button class="btn-circle" onclick="addPin(3)">3</button>
+                    <button class="btn-circle" onclick="addPin(4)">4</button><button class="btn-circle"
+                        onclick="addPin(5)">5</button><button class="btn-circle" onclick="addPin(6)">6</button>
+                    <button class="btn-circle" onclick="addPin(7)">7</button><button class="btn-circle"
+                        onclick="addPin(8)">8</button><button class="btn-circle" onclick="addPin(9)">9</button>
+                    <button class="btn-circle" onclick="hidePinPad()"
+                        style="font-size: 1rem; border:none; box-shadow:none;">Batal</button>
+                    <button class="btn-circle" onclick="addPin(0)">0</button>
+                </div>
+            </div>
+            <button class="btn-pill" id="btn-cancel-cash"
+                style="margin-top: 20px; font-size: 1rem; border:none; box-shadow:none; background:transparent;"
+                onclick="navTo('screen-qty')">Batalkan</button>
+        </div>
+
+        <div id="screen-layout" class="screen">
+            <h1>Pilih Gayamu!</h1>
+            <p class="subtitle">Frame mana yang paling kece untuk fotomu hari ini?</p>
+
+            <div id="customer-layout-container" class="layout-container"
+                style="flex-wrap: wrap; max-height: 50vh; overflow-y: auto; padding: 10px;">
+            </div>
+
+            <button class="btn-pill primary" onclick="proceedToCamera()">LANJUT FOTO 📸</button>
+            <button class="btn-pill"
+                style="margin-top: 10px; font-size: 1rem; border:none; box-shadow:none; background:transparent;"
+                onclick="navTo('screen-qty')">Kembali</button>
+        </div>
+
+        <div id="screen-camera" class="screen">
+            <div class="cam-header" style="width: 100%;">
+                <span style="font-weight: 900; color: var(--accent-color);">🍊 Orange Receipt</span>
+                <span id="cam-step-indicator" style="font-weight: bold; color: #888;">Take 1 / ?</span>
+            </div>
+
+            <div
+                style="position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; flex: 1; border: 4px solid #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-radius: 20px; background: #111;">
+
+                <video id="live-video" autoplay playsinline
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); z-index: 1;"></video>
+
+                <div id="smart-viewfinder"
+                    style="position: relative; z-index: 10; border-radius: 12px; border: 3px solid #fff; box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); transition: all 0.4s ease-in-out;">
+                </div>
+
+                <div class="countdown" id="cam-countdown" style="z-index: 30; position: absolute;">3</div>
+                <div class="flash-overlay" id="cam-flash"
+                    style="z-index: 40; position: absolute; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none;">
+                </div>
+            </div>
+
+            <div class="cam-controls">
+                <button class="btn-filter" id="btn-thermal" onclick="toggleThermal()">B/W</button>
+                <button class="btn-snap" onclick="startPhotoSession()">SNAP</button>
+                <button class="btn-filter" style="font-size: 0.8rem; border-color: red; color: red;"
+                    onclick="stopCameraAndLeave()">Batal</button>
+            </div>
+        </div>
+
+        <div id="screen-selection" class="screen">
+            <h1>Pilih yang Terbaik!</h1>
+            <p class="subtitle">Klik foto di sebelah kanan untuk melihat preview-nya.</p>
+
+            <div
+                style="display: flex; gap: 40px; justify-content: center; align-items: flex-start; width: 100%; max-width: 650px; margin-bottom: 20px;">
+
+                <div
+                    style="flex: 1.2; max-height: 55vh; overflow-y: auto; padding-right: 10px; display: flex; justify-content: center; align-items: flex-start; border-radius: 12px;">
+
+                    <div id="master-preview-box"
+                        style="position: relative; width: 100%; max-width: 250px; aspect-ratio: 250 / 600; background-color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 2px solid #ddd; overflow: hidden;">
+
+                        <div id="master-photo-layer"
+                            style="position: absolute; background-size: cover; background-position: center; transition: background-image 0.2s;">
+                        </div>
+
+                        <div id="master-template-layer"
+                            style="position: absolute; inset: 0; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; pointer-events: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+
+                    <div id="selection-thumbnails"
+                        style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 150px;">
+                    </div>
+
+                    <button class="btn-pill primary"
+                        style="margin: 10px 0 0 0; width: 100%; padding: 15px 10px; font-size: 1rem; box-shadow: 0 6px 0 #CC6200;"
+                        onclick="processSelectedPhoto()">CETAK FOTO 🖨️</button>
+
+                </div>
+
+            </div>
+        </div>
+        <div id="screen-processing" class="screen">
+            <div class="bounce-emoji" style="font-size: 5rem;">⏳</div>
+            <h1 id="proc-title">Memeras Momen...</h1>
+
+            <div
+                style="width: 80%; max-width: 400px; height: 20px; background: #eee; border-radius: 10px; margin: 20px auto; overflow: hidden; border: 2px solid var(--text-color);">
+                <div id="proc-bar"
+                    style="width: 0%; height: 100%; background: var(--accent-color); transition: width 0.3s ease;">
+                </div>
+            </div>
+            <p id="proc-status" style="font-weight: bold; color: #888;">Menyiapkan mesin...</p>
+        </div>
+
+        <div id="screen-printing" class="screen">
+            <div class="bounce-emoji" style="font-size: 5rem;">🖨️</div>
+            <h1>Sedang Dicetak!</h1>
+            <p class="subtitle">Silakan sobek struk perlahan jika sudah keluar.</p>
+        </div>
+
+        <div id="screen-qr" class="screen">
+            <h1>Priceless Momen!</h1>
+            <p class="subtitle">Scan kode ini untuk download versi Digital & GIF.</p>
+            <div id="qr-canvas-box" class="qr-final-box">📱</div>
+            <button class="btn-pill primary" onclick="finishSession()">SELESAI ✨</button>
+        </div>
+
+        <div id="screen-admin" class="screen" style="padding: 0; flex-direction: column; position: relative;">
+
+            <div
+                style="width: 100%; background: #2D2D2D; color: white; display: flex; align-items: center; justify-content: space-between; padding: 10px 30px; height: 75px; z-index: 100;">
+
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <h2 style="color: var(--accent-color); margin: 0; font-size: 1.4rem;">Admin Studio</h2>
+                    <div style="display: flex; gap: 10px; margin-left: 20px;">
+                        <p id="nav-layout" class="admin-nav-item active" onclick="switchAdminView('layout')">Layout
+                            Designer</p>
+                        <p id="nav-library" class="admin-nav-item" onclick="switchAdminView('library')">Frame Library
+                        </p>
+                        <p class="admin-nav-item">Branding & Theme</p>
+                        <p class="admin-nav-item">Printer Settings</p>
+                    </div>
+                </div>
+
+                <button class="btn-pill"
+                    style="font-size: 0.85rem; padding: 10px 25px; width: auto; margin: 0; border-color: #555; background: #333; color: #ccc; box-shadow: 0 4px 0 #111;"
+                    onclick="navTo('screen-standby')">Logout</button>
+            </div>
+
+            <div
+                style="flex: 1; display: flex; padding: 20px; gap: 20px; background: #f0f0f0; overflow: hidden; position: relative;">
+
+                <div id="admin-view-layout" style="display: flex; width: 100%; height: 100%; gap: 20px;">
+
+                    <div
+                        style="flex: 1.4; background: #e0e0e3; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+
+                        <div class="floating-toolbar">
+                            <button class="tool-btn" onclick="addManualBox()"><span>📷</span> Foto</button>
+                            <button class="tool-btn" onclick="addManualQR()"><span>📱</span> QR</button>
+                            <button class="tool-btn" onclick="addManualText()"><span>🔤</span> Teks</button>
+                            <button class="tool-btn" onclick="addManualLine()"><span>➖</span> Garis</button>
+                            <button class="tool-btn"
+                                onclick="document.getElementById('insert-image-file').click()"><span>🖼️</span>
+                                Gambar</button>
+                        </div>
+
+                        <input type="file" id="insert-image-file" style="display:none;" accept="image/png, image/jpeg"
+                            onchange="handleInsertImage(event)">
+
+                        <div id="layout-preview-canvas"
+                            style="container-type: inline-size; width: 100%; max-width: 280px; background: #fff; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.12); transition: aspect-ratio 0.3s ease;"
+                            onclick="selectElement(null)">
+                        </div>
+                    </div>
+
+                    <div
+                        style="flex: 1; background: white; border-radius: 20px; padding: 25px; display: flex; flex-direction: column; border: 1px solid #ddd; max-height: 90vh; overflow-y: auto;">
+
+                        <div id="inspector-canvas">
+
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 10px;">
+                                <input type="text" id="template-name" placeholder="Untitled Template"
+                                    style="flex:1; min-width:0; border:none; font-size: 1.2rem; font-weight: 900; outline:none;">
+                                <div style="display: flex; gap: 5px; flex-shrink: 0;">
+                                    <button class="tool-btn" style="background:#f0f0f0;"
+                                        onclick="document.getElementById('adm-bg-file').click()"
+                                        title="Background">🖼️</button>
+                                    <button class="tool-btn" style="background:#fff0f0; color:red;"
+                                        onclick="resetCanvas()" title="Reset">🔄</button>
+                                </div>
+                            </div>
+                            <input type="file" id="adm-bg-file" style="display:none;"
+                                onchange="handleFileUpload(event)">
+                            <input type="hidden" id="adm-bg-base64">
+
+                            <span class="inspector-label">Spesifikasi Kertas</span>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
+                                <select id="paper-width" class="inspector-input"
+                                    style="background:#fff; color:#333; border: 1px solid #ddd;"
+                                    onchange="updatePaperSize()">
+                                    <option value="576">80mm Wide</option>
+                                    <option value="384">58mm Small</option>
+                                </select>
+                                <div style="position:relative;">
+                                    <input type="number" id="paper-height-mm" value="150" class="inspector-input"
+                                        style="background:#fff; color:#333; border: 1px solid #ddd; text-align:left;"
+                                        oninput="updatePaperSize()">
+                                    <span
+                                        style="position:absolute; right:15px; top:12px; font-size:0.7rem; color:#aaa; font-weight:bold;">MM</span>
+                                </div>
+                            </div>
+
+                            <div
+                                style="background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px solid #eee;">
+                                <p
+                                    style="font-size: 0.8rem; font-weight: 800; margin-bottom: 15px; color: var(--accent-color);">
+                                    ⚡ AUTO GENERATOR</p>
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                                    <div><span class="inspector-label">Total Foto</span><input type="number"
+                                            id="adm-total-photos" value="2" class="inspector-input"
+                                            style="background:#fff; color:#333; border: 1px solid #ddd;"></div>
+                                    <div><span class="inspector-label">Jarak Y (px)</span><input type="number"
+                                            id="adm-gap-y-num" value="40" class="inspector-input"
+                                            style="background:#fff; color:#333; border: 1px solid #ddd;"></div>
+                                </div>
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                    <div><span class="inspector-label">Lebar Foto</span><input type="number"
+                                            id="adm-photo-width-num" value="480" class="inspector-input"
+                                            style="background:#fff; color:#333; border: 1px solid #ddd;"></div>
+                                    <div><span class="inspector-label">Tinggi Foto</span><input type="number"
+                                            id="adm-photo-height-num" value="360" class="inspector-input"
+                                            style="background:#fff; color:#333; border: 1px solid #ddd;"></div>
+                                </div>
+                                <label
+                                    style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; margin-bottom: 15px; font-weight: bold; color: #555;">
+                                    <input type="checkbox" id="adm-show-qr" checked> Sisipkan QR Animasi
+                                </label>
+                                <button class="btn-pill primary" style="width:100%; margin:0;"
+                                    onclick="applyAutoLayout()">Terapkan ke Kanvas</button>
+                            </div>
+                        </div>
+
+                        <div id="inspector-element"
+                            style="display:none; background: var(--dark-inspector); border-radius: 15px; padding: 20px; color: white;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                                <span id="prop-title" style="font-weight: 900; color: var(--accent-color);">EDIT</span>
+                                <span onclick="selectElement(null)" style="cursor:pointer; color:#666;">✕</span>
+                            </div>
+
+                            <div id="group-text" style="display:none; margin-bottom: 20px;">
+                                <span class="inspector-label">Isi Tulisan</span>
+                                <textarea id="edit-text-content" class="inspector-input"
+                                    style="height:60px; margin-bottom:10px;" oninput="updateSelectedSize()"></textarea>
+
+                                <div
+                                    style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                                    <div>
+                                        <span class="inspector-label">Font</span>
+                                        <select id="edit-font" class="inspector-input" onchange="updateSelectedSize()">
+                                            <option value="Quicksand">Quicksand</option>
+                                            <option value="Courier New">Retro Courier</option>
+                                            <option value="Arial">Modern Sans</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <span class="inspector-label">Size (px)</span>
+                                        <input type="number" id="edit-size" class="inspector-input"
+                                            oninput="updateSelectedSize()">
+                                    </div>
+                                </div>
+
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                    <div>
+                                        <span class="inspector-label">Align</span>
+                                        <div style="display:flex; gap:5px;">
+                                            <button class="tool-btn"
+                                                style="flex:1; justify-content:center; background:#444; color:white; padding:5px;"
+                                                onclick="setTextAlign('left')">⬅️</button>
+                                            <button class="tool-btn"
+                                                style="flex:1; justify-content:center; background:#444; color:white; padding:5px;"
+                                                onclick="setTextAlign('center')">↔️</button>
+                                            <button class="tool-btn"
+                                                style="flex:1; justify-content:center; background:#444; color:white; padding:5px;"
+                                                onclick="setTextAlign('right')">➡️</button>
+                                        </div>
+                                        <input type="hidden" id="edit-align" value="left">
+                                    </div>
+                                    <div>
+                                        <span class="inspector-label">Warna</span>
+                                        <input type="color" id="edit-color" class="inspector-input"
+                                            style="padding:0; height:35px;" oninput="updateSelectedSize()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+                                <div><span class="inspector-label">X Pos</span><input type="number" id="edit-x"
+                                        class="inspector-input" oninput="updateSelectedSize()"></div>
+                                <div><span class="inspector-label">Y Pos</span><input type="number" id="edit-y"
+                                        class="inspector-input" oninput="updateSelectedSize()"></div>
+                                <div><span class="inspector-label">Width</span><input type="number" id="edit-w"
+                                        class="inspector-input" oninput="updateSelectedSize()"></div>
+                                <div><span class="inspector-label">Height</span><input type="number" id="edit-h"
+                                        class="inspector-input" oninput="updateSelectedSize()"></div>
+                            </div>
+
+                            <div style="display:flex; gap:10px;">
+                                <button class="tool-btn"
+                                    style="background:#333; color:white; flex:1; justify-content:center;"
+                                    onclick="moveZIndex(1)">🔼 Depan</button>
+                                <button class="tool-btn"
+                                    style="background:#333; color:white; flex:1; justify-content:center;"
+                                    onclick="moveZIndex(-1)">🔽 Belakang</button>
+                            </div>
+
+                            <button class="btn-pill"
+                                style="width:100%; background: #ff4444; color:white; border:none; margin-top:15px;"
+                                onclick="deleteElement()">🗑️ Hapus Elemen</button>
+                        </div>
+
+                        <button class="btn-pill primary" style="margin-top:auto; height:55px; font-size: 1.1rem;"
+                            onclick="saveTemplateToLibrary()">💾 SIMPAN DESAIN</button>
+                    </div>
+                </div>
+                <div id="admin-view-library"
+                    style="display: none; width: 100%; height: 100%; background: white; border-radius: 20px; padding: 30px; flex-direction: column; border: 2px solid #ddd; overflow-y: auto;">
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px;">
+                        <div>
+                            <h2 style="color: var(--text-color); margin: 0; font-size: 1.8rem;">Frame Library
+                            </h2>
+                            <p style="color: #888; font-size: 0.9rem; margin-top: 5px;">Pilih template yang akan
+                                digunakan di mesin Photobooth.</p>
+                        </div>
+
+                        <div style="display: flex; gap: 15px;">
+                            <input type="text" id="search-library" placeholder="Cari nama template..."
+                                style="padding: 10px 15px; border-radius: 30px; border: 2px solid #ccc; width: 250px; font-size: 0.9rem;"
+                                oninput="renderLibrary()">
+
+                            <button class="btn-pill"
+                                style="margin: 0; padding: 10px 20px; font-size: 0.9rem; background: #2D2D2D; color: white; border-color: #2D2D2D;"
+                                onclick="syncFromCloud()">🔄 Sync from Cloud</button>
+
+                            <button class="btn-pill primary"
+                                style="margin: 0; padding: 10px 20px; font-size: 0.9rem; box-shadow: 0 4px 0 #CC6200;"
+                                onclick="switchAdminView('layout')">+ Buat Baru</button>
+                        </div>
+                    </div>
+
+                    <div id="library-grid-container" class="library-grid">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+        <script>
+            // --- Setup Layar Standby (Desain v0) ---
+            const standbyScreenEl = document.getElementById('screen-standby');
+            const orangeWrap = document.getElementById('orange-wrap');
+            const ripple = document.getElementById('ripple');
+            const rippleRing = document.getElementById('ripple-ring');
+
+            // Hover Effect Jeruk
+            standbyScreenEl.addEventListener('mouseenter', () => { orangeWrap.classList.add('hovering'); });
+            standbyScreenEl.addEventListener('mouseleave', () => { orangeWrap.classList.remove('hovering'); });
+
+            // =======================================================
+            // FITUR BARU: ANTI BUG TEKAN LAMA & OTOMATIS FULLSCREEN
+            // =======================================================
+
+            // 1. Matikan total pop-up klik kanan/tekan lama di seluruh aplikasi
+            document.addEventListener('contextmenu', event => event.preventDefault());
+
+            // 2. Fungsi pemaksa Fullscreen (Seperti aplikasi Kiosk/Native)
+            function enterFullscreen() {
+                const doc = document.documentElement;
+                if (doc.requestFullscreen) {
+                    doc.requestFullscreen().catch(() => { });
+                } else if (doc.webkitRequestFullscreen) { // Khusus untuk Chrome/Safari
+                    doc.webkitRequestFullscreen().catch(() => { });
+                }
+            }
+
+            // --- Animasi Klik & Pintu Rahasia Admin ---
+            let adminHoldTimer;
+
+            // 1. Saat jari MENYENTUH layar (Pointer Down)
+            standbyScreenEl.addEventListener('pointerdown', (e) => {
+
+                // PANGGIL FULLSCREEN: Begitu pelanggan menyentuh layar pertama kali, aplikasi langsung mode penuh!
+                enterFullscreen();
+
+                orangeWrap.classList.remove('hovering');
+                orangeWrap.classList.add('pressed');
+
+                // Trigger ripple effect air (Tetap ada)
+                ripple.classList.remove('active');
+                void rippleRing.offsetWidth;
+                rippleRing.style.animation = 'none';
+                void rippleRing.offsetWidth;
+                rippleRing.style.animation = '';
+                ripple.classList.add('active');
+
+                // Mulai hitung mundur 3 detik untuk Admin
+                adminHoldTimer = setTimeout(() => {
+                    // Batalkan efek klik normal
+                    orangeWrap.classList.remove('pressed');
+                    ripple.classList.remove('active');
+
+                    // Masuk ke Menu Admin
+                    navTo('screen-admin');
+                }, 3000);
+            });
+
+            // 2. Saat jari DIANGKAT dari layar (Klik Normal Pelanggan)
+            standbyScreenEl.addEventListener('pointerup', () => {
+                clearTimeout(adminHoldTimer); // Batalkan timer admin
+
+                // Jika masih di layar Standby, jalankan transisi normal ke QTY
+                if (standbyScreenEl.classList.contains('active')) {
+                    setTimeout(() => {
+                        orangeWrap.classList.remove('pressed');
+                        ripple.classList.remove('active');
+                        startTransition(); // Pindah ke menu "Berapa Lembar?" (Tetap aman!)
+                    }, 400);
+                }
+            });
+
+            // 3. Saat jari ditarik keluar/meleset dari layar
+            standbyScreenEl.addEventListener('pointerleave', () => {
+                clearTimeout(adminHoldTimer); // Batalkan timer admin
+                orangeWrap.classList.remove('pressed');
+            });
+
+            // --- Efek Transisi Bulatan Membesar ---
+            function startTransition() {
+                const nextScreen = document.getElementById('screen-qty');
+                nextScreen.classList.add('active', 'circle-expand');
+
+                setTimeout(() => {
+                    standbyScreenEl.classList.remove('active');
+                    nextScreen.classList.remove('circle-expand');
+                }, 800);
+            }
+
+            // --- Logika Photobooth Utama ---
+            function navTo(screenId) {
+                document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active', 'fade-in'); });
+                document.getElementById(screenId).classList.add('active', 'fade-in');
+
+                // Trigger Reset jika kembali ke Standby
+                if (screenId === 'screen-standby') resetAll();
+
+                // Trigger Render otomatis jika masuk ke layar Layout Pelanggan
+                if (screenId === 'screen-layout') renderCustomerLayouts();
+                // Trigger Kamera jika masuk ke layar Kamera
+                if (screenId === 'screen-camera') {
+                    startCamera();
+                    setupCameraSession(); // <-- Panggil fungsi baru ini
+                }
+            }
+
+            let qty = 1; const basePrice = 25000;
+            function updateQty(change) {
+                qty += change;
+                if (qty < 1) qty = 1;
+                if (qty > 5) qty = 5;
+                document.getElementById('qty-val').innerText = qty;
+                document.getElementById('price-val').innerText = (qty * basePrice).toLocaleString('id-ID');
+            }
+
+            let currentPin = '';
+            function addPin(num) {
+                if (currentPin.length < 4) {
+                    currentPin += num;
+                    document.getElementById(`dot-${currentPin.length}`).classList.add('filled');
+                }
+                if (currentPin.length === 4) {
+                    setTimeout(() => {
+                        navTo('screen-layout');
+                        currentPin = '';
+                        document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('filled'));
+                    }, 300);
+                }
+            }
+
+            function showPinPad() {
+                document.getElementById('pin-area').style.display = 'block';
+                document.getElementById('cash-title').innerText = 'Staff Only';
+                document.getElementById('cash-subtitle').innerText = 'Masukkan PIN otorisasi.';
+                document.getElementById('btn-cancel-cash').style.display = 'none';
+            }
+
+            function hidePinPad() {
+                document.getElementById('pin-area').style.display = 'none';
+                document.getElementById('cash-title').innerText = 'Bayar di Kasir Ya!';
+                document.getElementById('cash-subtitle').innerText = 'Selesaikan pembayaran di kasir, nanti staf kami akan mengaktifkan mesinnya.';
+                document.getElementById('btn-cancel-cash').style.display = 'block';
+                currentPin = '';
+                document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('filled'));
+            }
+
+            function selectLayout(element) {
+                document.querySelectorAll('.layout-card').forEach(c => c.classList.remove('selected'));
+                element.classList.add('selected');
+            }
+
+            let isThermalActive = false; // Memori status filter
+
+            function toggleThermal() {
+                isThermalActive = !isThermalActive;
+                const video = document.getElementById('live-video'); // Kita tembak langsung ke videonya
+                const btn = document.getElementById('btn-thermal');
+
+                if (isThermalActive) {
+                    video.classList.add('thermal-active');
+                    btn.classList.add('active-filter');
+                } else {
+                    video.classList.remove('thermal-active');
+                    btn.classList.remove('active-filter');
+                }
+            }
+
+            function captureFrame(targetW, targetH) {
+                const video = document.getElementById('live-video');
+                const canvas = document.createElement('canvas');
+                canvas.width = targetW;
+                canvas.height = targetH;
+                const ctx = canvas.getContext('2d');
+
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+
+                const videoRatio = video.videoWidth / video.videoHeight;
+                const targetRatio = targetW / targetH;
+                let drawW, drawH, startX, startY;
+
+                if (videoRatio > targetRatio) {
+                    drawH = targetH;
+                    drawW = video.videoWidth * (targetH / video.videoHeight);
+                    startX = (targetW - drawW) / 2;
+                    startY = 0;
+                } else {
+                    drawW = targetW;
+                    drawH = video.videoHeight * (targetW / video.videoWidth);
+                    startX = 0;
+                    startY = (targetH - drawH) / 2;
+                }
+
+                // --- TAMBAHAN BARU: Terapkan filter ke kanvas jika B/W aktif ---
+                if (isThermalActive) {
+                    // Efek kontras tinggi ala printer thermal kasir
+                    ctx.filter = 'grayscale(100%) contrast(160%) sepia(10%) brightness(110%)';
+                }
+                // -------------------------------------------------------------
+
+                ctx.drawImage(video, startX, startY, drawW, drawH);
+
+                ctx.filter = 'none'; // Reset filter setelah menggambar
+                return canvas.toDataURL('image/jpeg', 0.9);
+            }
+
+            // --- 3. LAYAR PREVIEW ADAPTIF (MENYESUAIKAN TINGGI RESOLUSI) ---
+            function renderSelectionScreen() {
+                navTo('screen-selection');
+                const thumbnailsContainer = document.getElementById('selection-thumbnails');
+                thumbnailsContainer.innerHTML = '';
+                selectedPhotoIndex = 0;
+
+                const sessionId = localStorage.getItem('orangeReceiptSessionFrame');
+                const library = JSON.parse(localStorage.getItem('orangeReceiptLibrary')) || [];
+                const tpl = library.find(item => item.id === sessionId);
+                const directBgLink = tpl ? tpl.background : '';
+
+                // Gunakan ukuran dinamis dari template
+                const paperW = tpl.baseWidth || 576;
+                const paperH = tpl.baseHeight || 1382;
+                const hole = activeHoles[0];
+
+                const pctX = (hole.x / paperW) * 100;
+                const pctY = (hole.y / paperH) * 100;
+                const pctW = (hole.w / paperW) * 100;
+                const pctH = (hole.h / paperH) * 100;
+
+                const templateLayer = document.getElementById('master-template-layer');
+                const photoLayer = document.getElementById('master-photo-layer');
+                const previewBox = document.getElementById('master-preview-box');
+
+                // Sesuaikan kotak preview secara dinamis mengikuti cetak biru desain
+                previewBox.style.aspectRatio = `${paperW} / ${paperH}`;
+
+                templateLayer.style.backgroundImage = directBgLink ? `url('${directBgLink}')` : 'none';
+
+                photoLayer.style.left = `${pctX}%`;
+                photoLayer.style.top = `${pctY}%`;
+                photoLayer.style.width = `${pctW}%`;
+                photoLayer.style.height = `${pctH}%`;
+
+                capturedPhotos.forEach((dataUrl, index) => {
+                    const thumb = document.createElement('div');
+                    thumb.style.width = '100%';
+                    thumb.style.aspectRatio = `${hole.w} / ${hole.h}`;
+                    thumb.style.backgroundImage = `url(${dataUrl})`;
+                    thumb.style.backgroundSize = 'cover';
+                    thumb.style.backgroundPosition = 'center';
+                    thumb.style.borderRadius = '10px';
+                    thumb.style.cursor = 'pointer';
+                    thumb.style.border = '4px solid transparent';
+                    thumb.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
+
+                    thumb.onclick = () => {
+                        photoLayer.style.backgroundImage = `url(${dataUrl})`;
+                        document.querySelectorAll('#selection-thumbnails > div').forEach(d => {
+                            d.style.borderColor = 'transparent';
+                            d.style.transform = 'scale(1)';
+                        });
+                        thumb.style.borderColor = 'var(--accent-color)';
+                        thumb.style.transform = 'scale(1.05)';
+                        selectedPhotoIndex = index;
+                    };
+                    thumbnailsContainer.appendChild(thumb);
+                });
+
+                if (thumbnailsContainer.children.length > 0) thumbnailsContainer.children[0].click();
+            }
+
+            // Tombol eksekusi akhir
+            function processSelectedPhoto() {
+                if (selectedPhotoIndex === null) {
+                    alert("Pilih 1 foto andalanmu dulu ya sebelum dicetak!");
+                    return;
+                }
+                // Foto sudah diamankan, lanjut ke proses perakitan rahasia!
+                runProcessingSequence();
+            }
+
+            async function runProcessingSequence() {
+                navTo('screen-processing');
+                const bar = document.getElementById('proc-bar');
+                const status = document.getElementById('proc-status');
+
+                // Tahap 1: Buat GIF
+                status.innerText = "Menjahit 3 fotomu menjadi animasi...";
+                bar.style.width = "20%";
+                await createGifAnimation();
+
+                // Tahap 2: Upload GIF ke Drive
+                status.innerText = "Mengirim animasi ke satelit Google...";
+                bar.style.width = "45%";
+                let timeStamp = new Date().getTime();
+                const gifUrl = await uploadToDrive(finalGifDataUri, `GIF_${timeStamp}.gif`, "image/gif");
+
+                // Tahap 3: Rakit Struk (Menunggu Link GIF untuk dibuat QR)
+                status.innerText = "Mencetak QR Code rahasia ke strukmu...";
+                bar.style.width = "70%";
+                await assembleFinalReceipt(gifUrl); // Kirim link GIF ke perakit
+
+                // Tahap 4: Upload Struk Final (JPG)
+                status.innerText = "Menyelesaikan mahakarya akhir...";
+                bar.style.width = "90%";
+                const jpgUrl = await uploadToDrive(finalAssembledImage, `STRUK_${timeStamp}.jpg`, "image/jpeg");
+
+                // Selesai
+                bar.style.width = "100%";
+                generateQRCodes(jpgUrl); // Hanya tampilkan 1 QR JPG di layar akhir
+
+                setTimeout(() => {
+                    navTo('screen-printing');
+                    setTimeout(() => { navTo('screen-qr'); }, 3000);
+                }, 500);
+            }
+
+            let finalAssembledImage = null; // Memori untuk menyimpan struk utuh siap cetak/upload
+
+            // --- 4. THE MASTER PRINT ENGINE (FIX Z-INDEX & ALIGNMENT) ---
+            async function assembleFinalReceipt(gifUrl) {
+                return new Promise(async (resolve) => {
+                    const sessionId = localStorage.getItem('orangeReceiptSessionFrame');
+                    const library = JSON.parse(localStorage.getItem('orangeReceiptLibrary')) || [];
+                    const tpl = library.find(item => item.id === sessionId);
+                    const localBgLink = tpl ? tpl.background : '';
+
+                    const printW = tpl.baseWidth || 576;
+                    const printH = tpl.baseHeight || 1382;
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = printW;
+                    canvas.height = printH;
+                    const ctx = canvas.getContext('2d');
+
+                    // 1. Tumpuk Paling Bawah: Kertas Putih
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Filter foto kasir (Opsional bisa dimatikan jika ingin logo berwarna)
+                    // ctx.filter = 'grayscale(100%) contrast(150%)'; 
+
+                    // 2. Tumpuk Layer 2: Background Template (Jika Ada)
+                    if (localBgLink) {
+                        const imgTpl = new Image();
+                        imgTpl.src = localBgLink;
+                        await new Promise(r => {
+                            imgTpl.onload = r;
+                            imgTpl.onerror = r; // Lanjut jika error
+                        });
+                        ctx.drawImage(imgTpl, 0, 0, printW, printH);
+                    }
+
+                    // 3. Tumpuk Layer 3: Semua Elemen Berdasarkan Urutan Array (Z-Index Perfect!)
+                    let photoIndex = 0; // Pelacak foto ke-berapa yang dipasang
+
+                    if (tpl.elements && tpl.elements.length > 0) {
+                        for (const el of tpl.elements) {
+                            if (el.type === 'photo') {
+                                // Pasang Foto Jepretan
+                                const photoData = capturedPhotos[photoIndex++];
+                                if (photoData) {
+                                    const img = new Image();
+                                    img.src = photoData;
+                                    await new Promise(r => img.onload = r);
+                                    // Terapkan filter thermal HANYA pada foto wajah
+                                    ctx.filter = 'grayscale(100%) contrast(160%) sepia(10%) brightness(110%)';
+                                    ctx.drawImage(img, el.x, el.y, el.w, el.h);
+                                    ctx.filter = 'none'; // Reset filter
+                                }
+                            }
+                            else if (el.type === 'image') {
+                                // Pasang Custom Logo / Stiker
+                                const img = new Image();
+                                img.src = el.base64;
+                                await new Promise(r => img.onload = r);
+                                ctx.drawImage(img, el.x, el.y, el.w, el.h);
+                            }
+                            else if (el.type === 'line') {
+                                // Pasang Garis Pembatas
+                                ctx.fillStyle = el.color;
+                                ctx.fillRect(el.x, el.y, el.w, el.h);
+                            }
+                            else if (el.type === 'qr') {
+                                // Pasang QR Code Animasi
+                                if (gifUrl) {
+                                    const tempDiv = document.createElement('div');
+                                    new QRCode(tempDiv, { text: gifUrl, width: 120, height: 120 });
+                                    const qrCanvas = tempDiv.querySelector('canvas');
+                                    if (qrCanvas) {
+                                        ctx.drawImage(qrCanvas, el.x, el.y, el.w, el.h);
+                                    }
+                                }
+                            }
+                            else if (el.type === 'text') {
+                                // MENGATASI BUG TEKS LONCAT SAAT DICETAK!
+                                ctx.font = `bold ${el.size || 30}px ${el.font}`;
+                                ctx.fillStyle = el.color;
+                                ctx.textBaseline = 'top'; // Set patokan ke atas agar sama dengan koordinat Y web
+
+                                const lines = el.content.split('\n'); // Dukung teks multiline (Enter)
+                                const lineHeight = (el.size || 30) * 1.2;
+
+                                lines.forEach((line, i) => {
+                                    let lineY = el.y + (i * lineHeight);
+                                    if (el.align === 'center') {
+                                        ctx.textAlign = 'center';
+                                        ctx.fillText(line, el.x + (el.w / 2), lineY); // Hitung titik tengah
+                                    } else if (el.align === 'right') {
+                                        ctx.textAlign = 'right';
+                                        ctx.fillText(line, el.x + el.w, lineY); // Hitung titik kanan
+                                    } else {
+                                        ctx.textAlign = 'left';
+                                        ctx.fillText(line, el.x, lineY);
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    finalAssembledImage = canvas.toDataURL('image/jpeg', 0.95);
+                    resolve(finalAssembledImage);
+                });
+            }
+
+            // --- 3. FITUR ADMIN: TAMBAH KOTAK QR ---
+            function addManualQR() {
+                const newQR = { id: Date.now(), type: 'qr', x: 75, y: 450, w: 100, h: 100 };
+                manualElements.push(newQR);
+                selectElement(newQR.id);
+            }
+
+            let finalGifDataUri = null; // Memori untuk menyimpan hasil GIF
+
+            // Fungsi Menjahit 3 Foto Menjadi GIF Animasi
+            function createGifAnimation() {
+                return new Promise((resolve) => {
+                    if (capturedPhotos.length === 0) {
+                        resolve(null);
+                        return;
+                    }
+
+                    // Kita gunakan ukuran lubang foto agar GIF-nya tajam dan proporsional
+                    const hole = activeHoles[0];
+
+                    gifshot.createGIF({
+                        images: capturedPhotos, // Masukkan 3 foto hasil jepretan
+                        gifWidth: hole.w,       // Lebar GIF
+                        gifHeight: hole.h,      // Tinggi GIF
+                        interval: 0.4,          // Kecepatan ganti frame (0.4 detik per foto)
+                        numFrames: 10,
+                        frameDuration: 4,
+                        sampleInterval: 10
+                    }, function (obj) {
+                        if (!obj.error) {
+                            finalGifDataUri = obj.image; // Simpan Base64 GIF ke memori!
+                            resolve(finalGifDataUri);
+                        } else {
+                            console.error("Gagal membuat GIF:", obj.error);
+                            resolve(null);
+                        }
+                    });
+                });
+            }
+            // --- JEMBATAN GOOGLE DRIVE & QR CODE ---
+            const GAS_URL = "https://script.google.com/macros/s/AKfycbyx3OC40HHQUACj7ED_e4PElLEQn4WQ_AjA2qIjdAqW9GSsGx65aJpDc3v0DSuHIsvP/exec";
+
+            async function uploadToDrive(base64Data, fileName, mimeType) {
+                try {
+                    const response = await fetch(GAS_URL, {
+                        method: 'POST',
+                        // Trik 'text/plain' agar browser TIDAK memblokir (Bypass CORS Preflight)
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            fileData: base64Data,
+                            fileName: fileName,
+                            mimeType: mimeType
+                        })
+                    });
+                    const result = await response.json();
+
+                    if (result.status === "success") {
+                        return result.url; // Mengembalikan link download Google Drive
+                    } else {
+                        console.error("Error dari Drive:", result.message);
+                        return null;
+                    }
+                } catch (e) {
+                    console.error("Gagal koneksi internet:", e);
+                    return null;
+                }
+            }
+
+            function generateQRCodes(jpgUrl) {
+                const qrContainer = document.getElementById('qr-canvas-box');
+                qrContainer.innerHTML = '';
+                if (jpgUrl) {
+                    new QRCode(qrContainer, { text: jpgUrl, width: 180, height: 180 });
+                } else {
+                    qrContainer.innerHTML = '<p style="color:red;">Koneksi Gagal</p>';
+                }
+            }
+
+            function finishSession() { navTo('screen-standby'); }
+
+            function resetAll() {
+                qty = 1;
+                document.getElementById('qty-val').innerText = qty;
+                document.getElementById('price-val').innerText = (qty * basePrice).toLocaleString('id-ID');
+                currentPin = '';
+                document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('filled'));
+
+                // FIX: Reset Filter B/W pada elemen yang benar (live-video)
+                const video = document.getElementById('live-video');
+                if (video) video.classList.remove('thermal-active');
+
+                const btnThermal = document.getElementById('btn-thermal');
+                if (btnThermal) btnThermal.classList.remove('active-filter');
+
+                if (typeof isThermalActive !== 'undefined') {
+                    isThermalActive = false; // Kembalikan status filter ke false
+                }
+
+                hidePinPad();
+
+                // FIX: Bersihkan QR Code untuk pelanggan selanjutnya
+                const qrContainer = document.querySelector('.qr-final-box');
+                if (qrContainer) {
+                    qrContainer.innerHTML = '📱';
+                    qrContainer.style = "width: 200px; height: 200px; background: white; border: 4px solid var(--text-color); border-radius: 20px; margin: 0 auto 30px auto; display: flex; align-items: center; justify-content: center; font-size: 5rem;";
+                }
+            }
+
+            // ==========================================
+            //  ARISTEKTUR LAYOUT DESIGNER (V2.0 - CANVA HYBRID)
+            // ==========================================
+
+            let BASE_WIDTH = 576; // Default Kertas 80mm
+            let BASE_HEIGHT = 1200; // Default 150mm * 8px
+            let manualElements = [];
+            let selectedId = null;
+            let isDragging = false;
+            let offset = { x: 0, y: 0 };
+            const currentMode = 'hybrid'; // Hanya ada 1 mode sekarang!
+
+            // --- 1. ENGINE UKURAN KERTAS FISIK (mm ke px) ---
+            function updatePaperSize() {
+                // Ambil lebar kertas (576px atau 384px)
+                BASE_WIDTH = parseInt(document.getElementById('paper-width').value);
+
+                // Konversi panjang mm ke px (Rumus: 1mm = 8px)
+                const heightMM = parseInt(document.getElementById('paper-height-mm').value) || 150;
+                BASE_HEIGHT = heightMM * 8;
+
+                // Terapkan ke kanvas visual
+                const canvas = document.getElementById('layout-preview-canvas');
+                canvas.style.aspectRatio = `${BASE_WIDTH} / ${BASE_HEIGHT}`;
+
+                renderManualCanvas();
+            }
+
+            // --- 2. THE SMART BACKGROUND UPLOAD ---
+            function handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const base64 = e.target.result;
+                    document.getElementById('adm-bg-base64').value = base64;
+
+                    const img = new Image();
+                    img.onload = function () {
+                        // Jika upload background, sistem otomatis mendeteksi ukuran panjangnya!
+                        const ratio = img.naturalHeight / img.naturalWidth;
+                        BASE_HEIGHT = Math.round(BASE_WIDTH * ratio);
+
+                        // Update input MM secara otomatis (dibagi 8)
+                        document.getElementById('paper-height-mm').value = Math.round(BASE_HEIGHT / 8);
+
+                        const canvas = document.getElementById('layout-preview-canvas');
+                        canvas.style.backgroundImage = `url('${base64}')`;
+                        canvas.style.aspectRatio = `${BASE_WIDTH} / ${BASE_HEIGHT}`;
+                        canvas.style.border = 'none';
+
+                        manualElements = [];
+                        renderManualCanvas();
+                    };
+                    img.src = base64;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function resetCanvas() {
+                if (!confirm("Yakin ingin membersihkan kanvas?")) return;
+                document.getElementById('template-name').value = '';
+                document.getElementById('adm-bg-file').value = '';
+                document.getElementById('adm-bg-base64').value = '';
+                document.getElementById('paper-height-mm').value = '150';
+
+                const canvas = document.getElementById('layout-preview-canvas');
+                canvas.style.backgroundImage = 'none';
+                canvas.style.border = '1px dashed #bbb';
+
+                updatePaperSize(); // Kembalikan ukuran
+                manualElements = [];
+                selectElement(null);
+            }
+
+            // --- GELOMBANG 1.5: SMART INSPECTOR ---
+            function selectElement(id) {
+                selectedId = id;
+                const elCanvas = document.getElementById('inspector-canvas');
+                const elProp = document.getElementById('inspector-element');
+                const groupText = document.getElementById('group-text');
+
+                if (!id) {
+                    elCanvas.style.display = 'block'; elProp.style.display = 'none';
+                } else {
+                    elCanvas.style.display = 'none'; elProp.style.display = 'block';
+                    const el = manualElements.find(item => item.id === id);
+                    document.getElementById('prop-title').innerText = `EDIT ${el.type.toUpperCase()}`;
+                    groupText.style.display = (el.type === 'text') ? 'block' : 'none';
+
+                    document.getElementById('edit-x').value = el.x;
+                    document.getElementById('edit-y').value = el.y;
+                    document.getElementById('edit-w').value = el.w;
+                    document.getElementById('edit-h').value = el.h;
+
+                    if (el.type === 'text') {
+                        document.getElementById('edit-text-content').value = el.content;
+                        document.getElementById('edit-font').value = el.font;
+                        document.getElementById('edit-color').value = el.color;
+                        document.getElementById('edit-size').value = el.size || 30;
+                        document.getElementById('edit-align').value = el.align || 'left';
+                    }
+                }
+                renderManualCanvas();
+            }
+
+            // --- FITUR BARU: Kompresor & Penyisip Logo/Gambar (Anti-Crash) ---
+            function handleInsertImage(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        // Kompresi jika terlalu besar agar LocalStorage tidak jebol!
+                        const MAX_WIDTH = 300;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH) {
+                            height = Math.round(height * (MAX_WIDTH / width));
+                            width = MAX_WIDTH;
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const compressedBase64 = canvas.toDataURL('image/png', 0.8); // Kualitas 80%
+
+                        const newItem = {
+                            id: Date.now(), type: 'image', base64: compressedBase64,
+                            x: 50, y: 50, w: width, h: height
+                        };
+                        manualElements.push(newItem);
+                        selectElement(newItem.id);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                event.target.value = ''; // Kosongkan input
+            }
+
+            // --- UPDATE: Menambahkan Ukuran dan Rata Kiri/Kanan ---
+            function setTextAlign(align) {
+                document.getElementById('edit-align').value = align;
+                updateSelectedSize();
+            }
+
+            // --- GELOMBANG 2 & 3: NEW ELEMENTS ---
+            function addManualText() {
+                const newItem = { id: Date.now(), type: 'text', content: 'TEXT HERE', x: 50, y: 50, w: 250, h: 40, font: 'Quicksand', color: '#000000', size: 30, align: 'left' };
+                manualElements.push(newItem); selectElement(newItem.id);
+            }
+
+            function addManualLine() {
+                const newItem = { id: Date.now(), type: 'line', x: 20, y: 200, w: 536, h: 4, color: '#2d2d2d' };
+                manualElements.push(newItem);
+                selectElement(newItem.id);
+            }
+
+            function moveZIndex(dir) {
+                const idx = manualElements.findIndex(el => el.id === selectedId);
+                if (idx === -1) return;
+                const targetIdx = idx + dir;
+                if (targetIdx >= 0 && targetIdx < manualElements.length) {
+                    const temp = manualElements[idx];
+                    manualElements[idx] = manualElements[targetIdx];
+                    manualElements[targetIdx] = temp;
+                    renderManualCanvas();
+                }
+            }
+
+            function updateSelectedSize() {
+                if (!selectedId) return;
+                const el = manualElements.find(item => item.id === selectedId);
+
+                el.x = parseInt(document.getElementById('edit-x').value) || 0;
+                el.y = parseInt(document.getElementById('edit-y').value) || 0;
+                el.w = parseInt(document.getElementById('edit-w').value) || 50;
+                el.h = parseInt(document.getElementById('edit-h').value) || 50;
+
+                if (el.type === 'text') {
+                    el.content = document.getElementById('edit-text-content').value;
+                    el.font = document.getElementById('edit-font').value;
+                    el.color = document.getElementById('edit-color').value;
+                    el.size = parseInt(document.getElementById('edit-size').value) || 30; // Ambil nilai Size
+                    el.align = document.getElementById('edit-align').value; // Ambil nilai Align
+                }
+                renderManualCanvas();
+            }
+
+            function addManualBox() {
+                // Gunakan pengaman jika elemen input terhapus
+                const wEl = document.getElementById('adm-photo-width-num');
+                const hEl = document.getElementById('adm-photo-height-num');
+                const newW = wEl && wEl.value ? parseInt(wEl.value) : 480;
+                const newH = hEl && hEl.value ? parseInt(hEl.value) : 360;
+
+                const newBox = { id: Date.now(), type: 'photo', x: Math.round((BASE_WIDTH - newW) / 2), y: 100, w: newW, h: newH };
+                manualElements.push(newBox); selectElement(newBox.id);
+            }
+            function addManualQR() {
+                const newQR = { id: Date.now(), type: 'qr', x: Math.round((BASE_WIDTH - 120) / 2), y: 300, w: 120, h: 120 };
+                manualElements.push(newQR); selectElement(newQR.id);
+            }
+            function deleteElement() { manualElements = manualElements.filter(el => el.id !== selectedId); selectElement(null); }
+            function duplicateElement() {
+                if (!selectedId) return;
+                const el = manualElements.find(item => item.id === selectedId);
+                const newEl = { ...el, id: Date.now(), x: el.x + 30, y: el.y + 30 };
+                manualElements.push(newEl); selectElement(newEl.id);
+            }
+
+            // --- 4. THE HYBRID AUTO GENERATOR ---
+            function applyAutoLayout() {
+                // Fungsi pembaca nilai super aman
+                const getVal = (id, def) => { const el = document.getElementById(id); return el && el.value ? parseInt(el.value) : def; };
+
+                const total = getVal('adm-total-photos', 2);
+                const gapY = getVal('adm-gap-y-num', 40);
+                const w = getVal('adm-photo-width-num', 480);
+                const h = getVal('adm-photo-height-num', 360);
+
+                const qrEl = document.getElementById('adm-show-qr');
+                const showQR = qrEl ? qrEl.checked : false; // Anti-null untuk Checkbox!
+
+                manualElements = [];
+                let currentY = 80;
+
+                for (let i = 0; i < total; i++) {
+                    manualElements.push({
+                        id: Date.now() + i, type: 'photo',
+                        x: Math.round((BASE_WIDTH - w) / 2),
+                        y: currentY, w: w, h: h
+                    });
+                    currentY += h + gapY;
+                }
+
+                if (showQR) {
+                    manualElements.push({
+                        id: Date.now() + 99, type: 'qr',
+                        x: Math.round((BASE_WIDTH - 120) / 2),
+                        y: currentY, w: 120, h: 120
+                    });
+                }
+
+                selectElement(null);
+                renderManualCanvas();
+            }
+
+            // --- 5. RENDER & DRAG ENGINE ---
+            function renderManualCanvas() {
+                const canvas = document.getElementById('layout-preview-canvas');
+                canvas.innerHTML = '';
+
+                manualElements.forEach(el => {
+                    const div = document.createElement('div');
+                    div.style.position = 'absolute';
+                    div.style.left = (el.x / BASE_WIDTH * 100) + '%';
+                    div.style.top = (el.y / BASE_HEIGHT * 100) + '%';
+                    div.style.width = (el.w / BASE_WIDTH * 100) + '%';
+                    div.style.height = (el.h / BASE_HEIGHT * 100) + '%';
+
+                    div.style.display = 'flex';
+                    div.style.cursor = 'move';
+
+                    if (el.type === 'text') {
+                        // Penyesuaian Alignment yang Akurat!
+                        if (el.align === 'center') div.style.justifyContent = 'center';
+                        else if (el.align === 'right') div.style.justifyContent = 'flex-end';
+                        else div.style.justifyContent = 'flex-start';
+
+                        div.style.textAlign = el.align;
+                        div.style.fontFamily = el.font;
+                        div.style.color = el.color;
+                        // FIX BUG FONT LONCAT: Menggunakan CQI agar skala font ikut zoom kanvas!
+                        div.style.fontSize = (el.size / BASE_WIDTH * 100) + 'cqi';
+                        div.style.whiteSpace = 'pre-wrap'; // Dukung Enter (multiline)
+                        div.style.alignItems = 'flex-start';
+                        div.innerText = el.content;
+                        div.style.border = (selectedId === el.id) ? '2px solid var(--accent-color)' : '1px dashed transparent';
+                    } else if (el.type === 'image') {
+                        // Render Gambar/Logo Sisipan
+                        div.style.backgroundImage = `url(${el.base64})`;
+                        div.style.backgroundSize = 'contain';
+                        div.style.backgroundRepeat = 'no-repeat';
+                        div.style.border = (selectedId === el.id) ? '2px solid var(--accent-color)' : 'none';
+                    } else if (el.type === 'line') {
+                        div.style.background = el.color;
+                        div.style.border = (selectedId === el.id) ? '2px solid var(--accent-color)' : 'none';
+                    } else {
+                        // Kotak Foto & QR
+                        div.style.alignItems = 'center'; div.style.justifyContent = 'center'; div.style.fontWeight = 'bold';
+                        div.style.background = (el.type === 'photo') ? 'rgba(255,123,0,0.1)' : 'rgba(0,0,0,0.1)';
+                        div.style.border = (selectedId === el.id) ? '3px solid var(--accent-color)' : '2px dashed #888';
+                        div.innerText = el.type.toUpperCase();
+                    }
+
+                    // SENSOR DRAG
+                    div.onmousedown = (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        isDragging = true;
+                        const rect = canvas.getBoundingClientRect();
+                        const scaleX = BASE_WIDTH / rect.width;
+                        const scaleY = BASE_HEIGHT / rect.height;
+                        offset.x = (e.clientX - rect.left) * scaleX - el.x;
+                        offset.y = (e.clientY - rect.top) * scaleY - el.y;
+                        selectElement(el.id);
+                    };
+                    canvas.appendChild(div);
+                });
+            }
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging || !selectedId) return;
+                const canvas = document.getElementById('layout-preview-canvas');
+                const rect = canvas.getBoundingClientRect();
+                const el = manualElements.find(item => item.id === selectedId);
+
+                const scaleX = BASE_WIDTH / rect.width;
+                const scaleY = BASE_HEIGHT / rect.height;
+
+                let newX = Math.round((e.clientX - rect.left) * scaleX - offset.x);
+                let newY = Math.round((e.clientY - rect.top) * scaleY - offset.y);
+
+                const centerX = (BASE_WIDTH / 2) - (el.w / 2);
+                if (Math.abs(newX - centerX) < 15) newX = centerX; // Efek Magnet (Snap to center)
+
+                el.x = newX; el.y = newY;
+                renderManualCanvas();
+            });
+            document.addEventListener('mouseup', () => { isDragging = false; });
+
+            // --- 6. THE JSON SAVER (HYBRID SAFE MODE) ---
+            function saveTemplateToLibrary() {
+                const templateName = document.getElementById('template-name').value;
+                const bgBase64 = document.getElementById('adm-bg-base64').value;
+
+                if (!templateName) {
+                    alert('Harap isi Nama Template terlebih dahulu!');
+                    return;
+                }
+
+                let templateData = {
+                    id: 'TPL-' + Date.now(),
+                    name: templateName,
+                    background: bgBase64 || '', // Opsional
+                    baseWidth: BASE_WIDTH,
+                    baseHeight: BASE_HEIGHT,
+                    mode: 'manual', // Paksa menjadi mode manual agar perakit mudah membacanya
+                    elements: manualElements // Semua kotak sekarang tersimpan sebagai elemen manual yang pasti letaknya!
+                };
+
+                let savedLibrary = JSON.parse(localStorage.getItem('orangeReceiptLibrary')) || [];
+                savedLibrary.push(templateData);
+                localStorage.setItem('orangeReceiptLibrary', JSON.stringify(savedLibrary));
+
+                alert(`Sukses! Template "${templateName}" tersimpan di Library.`);
+                document.getElementById('template-name').value = '';
+                renderLibrary();
+            }
+
+            // Fungsi Pindah Tab Menu Atas
+            function switchAdminView(view) {
+                // Update warna tombol navigasi
+                document.getElementById('nav-layout').classList.remove('active');
+                document.getElementById('nav-library').classList.remove('active');
+                document.getElementById('nav-' + view).classList.add('active');
+
+                // Sembunyikan/Tampilkan Area Kerja
+                const viewLayout = document.getElementById('admin-view-layout');
+                const viewLibrary = document.getElementById('admin-view-library');
+
+                if (view === 'library') {
+                    viewLayout.style.display = 'none';
+                    viewLibrary.style.display = 'flex';
+                    renderLibrary(); // Panggil data setiap kali tab dibuka
+                } else {
+                    viewLayout.style.display = 'flex';
+                    viewLibrary.style.display = 'none';
+                }
+            }
+
+            // --- HELPER: ENGINE PEMBUAT MINIATUR KANVAS ---
+            // Fungsi ini bertugas menggambar ulang desain secara "mini" untuk menu pilihan
+            function generateMiniatureHTML(tpl) {
+                const bgImage = tpl.background || '';
+                const baseW = tpl.baseWidth || 576;
+                const baseH = tpl.baseHeight || 1200;
+
+                let elementsHtml = '';
+                if (tpl.elements && tpl.elements.length > 0) {
+                    tpl.elements.forEach(el => {
+                        let innerContent = '';
+                        let extraStyle = '';
+
+                        if (el.type === 'text') {
+                            innerContent = el.content;
+                            // Skala font diperkecil secara paksa untuk thumbnail
+                            extraStyle = `font-family: ${el.font}; color: ${el.color}; font-size: 0.4rem; overflow: hidden; display: flex; align-items: center; justify-content: center;`;
+                        } else if (el.type === 'line') {
+                            extraStyle = `background: ${el.color};`;
+                        } else {
+                            // Untuk foto dan QR di miniatur, kita gunakan ikon kecil agar lebih manis
+                            extraStyle = `border: 1px solid rgba(0,0,0,0.15); background: ${el.type === 'photo' ? 'rgba(255,123,0,0.15)' : 'rgba(0,0,0,0.15)'}; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; color: #888;`;
+                            innerContent = el.type === 'photo' ? '📷' : '📱';
+                        }
+
+                        // Gunakan persentase agar posisi selalu akurat meskipun ukurannya mengecil!
+                        elementsHtml += `
+                        <div style="position: absolute;
+                                    left: ${(el.x / baseW) * 100}%;
+                                    top: ${(el.y / baseH) * 100}%;
+                                    width: ${(el.w / baseW) * 100}%;
+                                    height: ${(el.h / baseH) * 100}%;
+                                    ${extraStyle}">
+                            ${innerContent}
+                        </div>
+                    `;
+                    });
+                }
+
+                // Kembalikan div miniatur yang proporsinya sama persis dengan kertas thermal
+                return `
+                <div style="position: relative; height: 100%; aspect-ratio: ${baseW} / ${baseH}; background-image: url('${bgImage}'); background-size: 100% 100%; background-color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; margin: 0 auto; overflow: hidden;">
+                    ${elementsHtml}
+                </div>
+            `;
+            }
+
+            // --- PEMBACAAN DATA KE LAYAR ADMIN (LIBRARY) ---
+            function renderLibrary() {
+                const container = document.getElementById('library-grid-container');
+                const searchEl = document.getElementById('search-library');
+                const searchQuery = searchEl ? searchEl.value.toLowerCase() : '';
+
+                let library = JSON.parse(localStorage.getItem('orangeReceiptLibrary')) || [];
+                let activeIds = JSON.parse(localStorage.getItem('orangeReceiptActiveFrames')) || [];
+
+                container.innerHTML = '';
+
+                if (library.length === 0) {
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#aaa; margin-top:50px;">Belum ada template. Silakan buat di Layout Designer.</p>';
+                    return;
+                }
+
+                library.forEach(tpl => {
+                    if (!tpl.name.toLowerCase().includes(searchQuery)) return;
+
+                    const isActive = activeIds.includes(tpl.id);
+                    // Hitung jumlah kotak foto saja untuk informasi
+                    const photoCount = tpl.elements ? tpl.elements.filter(el => el.type === 'photo').length : 0;
+
+                    // Buat Miniatur
+                    const miniaturCanvas = generateMiniatureHTML(tpl);
+
+                    const card = document.createElement('div');
+                    card.className = `frame-card ${isActive ? 'active-frame' : ''}`;
+                    card.innerHTML = `
+                    <div class="frame-preview" style="height: 220px; background-color: #f0f0f0; padding: 15px; display: flex; justify-content: center; align-items: center; position: relative;">
+                        ${miniaturCanvas}
+                        ${isActive ? '<div class="badge-active">⭐ ACTIVE</div>' : ''}
+                    </div>
+                    <div class="frame-info">
+                        <h3 style="margin-bottom: 5px; font-size: 1.1rem; color: var(--accent-color);">${tpl.name}</h3>
+                        <p style="font-size: 0.75rem; color: #888; font-weight: bold;">Manual Design • ${photoCount} Foto</p>
+                    </div>
+                    <div class="frame-actions">
+                        <button class="btn-pill ${isActive ? 'primary' : ''}" style="flex: 2; margin: 0; padding: 8px; font-size: 0.8rem; box-shadow: 0 3px 0 ${isActive ? '#CC6200' : '#ccc'};" onclick="toggleActiveFrame('${tpl.id}')">${isActive ? '⭐ Terpasang' : 'Pasang'}</button>
+                        <button class="btn-pill" style="flex: 1; margin: 0; padding: 8px; font-size: 0.8rem; color: red; border-color: red; box-shadow: 0 3px 0 #ffcccc;" onclick="deleteFrame('${tpl.id}', '${tpl.name}')">🗑️</button>
+                    </div>
+                `;
+                    container.appendChild(card);
+                });
+            }
+
+            // --- PEMBACAAN DATA KE LAYAR PELANGGAN ---
+            function renderCustomerLayouts() {
+                const container = document.getElementById('customer-layout-container');
+                let library = JSON.parse(localStorage.getItem('orangeReceiptLibrary')) || [];
+                let activeIds = JSON.parse(localStorage.getItem('orangeReceiptActiveFrames')) || [];
+
+                container.innerHTML = '';
+                selectedCustomerFrameId = null;
+
+                let activeLibrary = library.filter(tpl => activeIds.includes(tpl.id));
+
+                if (activeLibrary.length === 0) {
+                    container.innerHTML = '<p style="color:#888; font-weight:bold; width: 100%;">Oops, Admin belum mengaktifkan frame desain apapun. Harap lapor ke staf!</p>';
+                    return;
+                }
+
+                activeLibrary.forEach(tpl => {
+                    const photoCount = tpl.elements ? tpl.elements.filter(el => el.type === 'photo').length : 0;
+
+                    // Buat Miniatur untuk Pelanggan
+                    const miniaturCanvas = generateMiniatureHTML(tpl);
+
+                    const card = document.createElement('div');
+                    card.className = 'layout-card';
+                    card.id = `cust-card-${tpl.id}`;
+                    card.onclick = () => selectCustomerLayout(tpl.id);
+
+                    card.innerHTML = `
+                    <div class="layout-ill" style="height: 250px; background-color: #f8f8f8; padding: 15px; display: flex; justify-content: center; align-items: center; border: 1px solid #ddd; border-radius: 15px; margin-bottom: 15px;">
+                        ${miniaturCanvas}
+                    </div>
+                    <h2 style="font-weight: 900; font-size: 1.2rem; color: var(--accent-color); margin-bottom: 5px;">${tpl.name}</h2>
+                    <p style="font-size: 0.8rem; color: #888; font-weight: bold;">${photoCount} Foto</p>
+                `;
+                    container.appendChild(card);
+                });
+            }
+
+            // Fungsi Set/Unset Active Frame (BISA MULTIPLE)
+            function toggleActiveFrame(id) {
+                // Ambil daftar frame aktif saat ini (bentuknya sekarang Array)
+                let activeIds = JSON.parse(localStorage.getItem('orangeReceiptActiveFrames')) || [];
+
+                const index = activeIds.indexOf(id);
+                if (index > -1) {
+                    // Jika sudah ada di daftar, cabut/nonaktifkan
+                    activeIds.splice(index, 1);
+                } else {
+                    // Jika belum ada, masukkan ke daftar aktif
+                    activeIds.push(id);
+                }
+
+                localStorage.setItem('orangeReceiptActiveFrames', JSON.stringify(activeIds));
+                renderLibrary(); // Refresh tampilan kartu di Admin
+            }
+
+            // Fungsi Hapus Template (Safe Delete Multiple)
+            function deleteFrame(id, name) {
+                const confirmDelete = confirm(`Apakah kamu yakin ingin menghapus template "${name}"?`);
+                if (confirmDelete) {
+                    let library = JSON.parse(localStorage.getItem('orangeReceiptLibrary')) || [];
+                    library = library.filter(tpl => tpl.id !== id);
+                    localStorage.setItem('orangeReceiptLibrary', JSON.stringify(library));
+
+                    // Bersihkan juga dari daftar aktif jika kebetulan template ini sedang dipasang
+                    let activeIds = JSON.parse(localStorage.getItem('orangeReceiptActiveFrames')) || [];
+                    activeIds = activeIds.filter(activeId => activeId !== id);
+                    localStorage.setItem('orangeReceiptActiveFrames', JSON.stringify(activeIds));
+
+                    renderLibrary();
+                }
+            }
+
+            // --- FITUR SYNC DARI GITHUB / LOKAL ---
+            async function syncFromCloud() {
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = "⏳ Menyinkronkan...";
+
+                try {
+                    // Menarik data dari file database.json yang ada di sebelah index.html
+                    // Saat nanti di-upload ke GitHub, ini akan otomatis membaca dari URL GitHub Pages Anda!
+                    const response = await fetch('./database.json');
+
+                    if (!response.ok) {
+                        throw new Error("Gagal menemukan database.json");
+                    }
+
+                    const cloudData = await response.json();
+
+                    // Timpa gudang memori (localStorage) mesin ini dengan data dari JSON
+                    localStorage.setItem('orangeReceiptLibrary', JSON.stringify(cloudData));
+
+                    alert('Sinkronisasi Sukses! ' + cloudData.length + ' template berhasil di-download ke mesin ini.');
+                    renderLibrary(); // Refresh tampilan kartu
+
+                } catch (error) {
+                    console.error(error);
+                    alert('Gagal menyinkronkan data. Pastikan file database.json ada dan internet terhubung.');
+                } finally {
+                    btn.innerText = originalText;
+                }
+            }
+
+            // --- LOGIKA ALUR PELANGGAN (CUSTOMER FLOW) ---
+            let selectedCustomerFrameId = null; // Menyimpan ID frame yang dipilih pelanggan
+
+            // Fungsi saat pelanggan mengklik salah satu frame
+            function selectCustomerLayout(id) {
+                selectedCustomerFrameId = id;
+
+                // Hapus efek glow/pilihan dari semua kartu
+                document.querySelectorAll('#customer-layout-container .layout-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+
+                // Tambahkan efek glow/pilihan ke kartu yang diklik
+                const activeCard = document.getElementById(`cust-card-${id}`);
+                if (activeCard) activeCard.classList.add('selected');
+            }
+
+            // Fungsi validasi sebelum masuk kamera
+            function proceedToCamera() {
+                if (!selectedCustomerFrameId) {
+                    alert('Halo! Tolong pilih salah satu frame dulu ya sebelum lanjut foto.');
+                    return;
+                }
+
+                // Simpan ID frame yang dipilih ke sesi aktif, ini krusial untuk nanti dirender di layar kamera!
+                localStorage.setItem('orangeReceiptSessionFrame', selectedCustomerFrameId);
+                navTo('screen-camera');
+            }
+
+            // --- LOGIKA KAMERA & MASKING PRESISI (HYBRID ENGINE V3) ---
+            let mediaStream = null;
+
+            // 1. CERMIN SUPER RINGAN (720p) - Sesuai instruksi Anda agar anti-lag
+            async function startCamera() {
+                const video = document.getElementById('live-video');
+                try {
+                    mediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }
+                    });
+                    video.srcObject = mediaStream;
+                } catch (err) {
+                    console.error("Akses kamera ditolak / error:", err);
+                    alert("Gagal mengakses kamera! Pastikan browser diizinkan menggunakan kamera.");
+                }
+            }
+
+            function stopCamera() {
+                if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+            }
+
+            function cancelCamera() {
+                stopCamera();
+                navTo('screen-layout');
+            }
+
+            let capturedPhotos = [];
+            let selectedPhotoIndex = null;
+
+            // 2. Siklus Jepretan (The Snapshot Loop)
+            function startPhotoSession() {
+                if (activeHoles.length === 0) return;
+                const currentBox = activeHoles[0];
+
+                const countdownEl = document.getElementById('cam-countdown');
+                const flashEl = document.getElementById('cam-flash');
+                const stepIndicator = document.getElementById('cam-step-indicator');
+
+                capturedPhotos = [];
+                let take = 1;
+
+                function runTake() {
+                    stepIndicator.innerText = `Take ${take} / 3`;
+                    let count = 3;
+                    countdownEl.style.display = 'block';
+                    countdownEl.innerText = count;
+
+                    const timer = setInterval(async () => {
+                        count--;
+                        if (count > 0) {
+                            countdownEl.innerText = count;
+                        } else {
+                            clearInterval(timer);
+                            countdownEl.style.display = 'none';
+
+                            // 1. AKTIFKAN LAYAR PUTIH (Menyamarkan Lag Kamera Asli)
+                            flashEl.style.opacity = '1';
+
+                            // 2. JAGA WAKTU: Tunggu sampai foto benar-benar selesai dijepret & dikompres!
+                            const photoData = await executeRealPhotography(currentBox.w, currentBox.h);
+                            if (photoData) capturedPhotos.push(photoData);
+
+                            // 3. FOTO SELESAI: Matikan Layar Putih!
+                            flashEl.style.opacity = '0';
+                            take++;
+
+                            // 4. Lanjut ke Take Berikutnya
+                            if (take <= 3) {
+                                setTimeout(runTake, 800); // Beri nafas 0.8 detik sebelum timer baru mulai
+                            } else {
+                                stopCamera();
+                                renderSelectionScreen();
+                            }
+                        }
+                    }, 1000);
+                }
+
+                runTake();
+            }
+
+            // 3. JANTUNG FOTOGRAFI: 100% FOTO ASLI Lensa Tab S9 (Bukan Video)
+            async function executeRealPhotography(targetW, targetH) {
+                const track = mediaStream.getVideoTracks()[0];
+                let sourceImage;
+
+                try {
+                    // Panggil API Fotografi Asli
+                    const imageCapture = new ImageCapture(track);
+
+                    // Trik Khusus Samsung Tab S9: Bypass bug "setPhotoOptions failed"
+                    let photoSettings = {};
+                    try {
+                        // Baca kemampuan maksimal lensa keras (Hardware)
+                        const capabilities = await imageCapture.getPhotoCapabilities();
+                        if (capabilities.imageWidth && capabilities.imageWidth.max) {
+                            // Paksa jepret di resolusi paling mentok/maksimal!
+                            photoSettings.imageWidth = capabilities.imageWidth.max;
+                        }
+                    } catch (capErr) {
+                        console.warn("Lewati cek kapabilitas:", capErr);
+                    }
+
+                    // JEPRET FOTO ASLI (Resolusi Tinggi!)
+                    const blob = await imageCapture.takePhoto(photoSettings);
+                    sourceImage = await createImageBitmap(blob);
+
+                } catch (error) {
+                    console.error("Gagal menjepret foto asli:", error);
+                    alert("Terjadi kesalahan pada lensa perangkat. Gagal memotret.");
+                    return null; // Kita hentikan proses, KITA TIDAK MAU pakai screenshot video!
+                }
+
+                // 4. MESIN PENGGILINGAN OFF-SCREEN (Mengecilkan foto asli agar RAM tidak jebol)
+                const canvas = document.createElement('canvas');
+                canvas.width = targetW;
+                canvas.height = targetH;
+                const ctx = canvas.getContext('2d');
+
+                // Mirroring (Efek Cermin)
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+
+                const sourceW = sourceImage.width;
+                const sourceH = sourceImage.height;
+
+                const sourceRatio = sourceW / sourceH;
+                const targetRatio = targetW / targetH;
+                let drawW, drawH, startX, startY;
+
+                // Hitung crop presisi
+                if (sourceRatio > targetRatio) {
+                    drawH = targetH;
+                    drawW = sourceW * (targetH / sourceH);
+                    startX = (targetW - drawW) / 2;
+                    startY = 0;
+                } else {
+                    drawW = targetW;
+                    drawH = sourceH * (targetW / sourceW);
+                    startX = 0;
+                    startY = (targetH - drawH) / 2;
+                }
+
+                // Terapkan Filter Hitam Putih (Jika Sedang Aktif)
+                if (isThermalActive) {
+                    ctx.filter = 'grayscale(100%) contrast(160%) sepia(10%) brightness(110%)';
+                }
+
+                // Gambar hasil jepretan asli ke ukuran template
+                ctx.drawImage(sourceImage, startX, startY, drawW, drawH);
+                ctx.filter = 'none';
+
+                // WAJIB: Hapus gambar raksasa dari memori agar RAM lega kembali!
+                sourceImage.close();
+
+                return canvas.toDataURL('image/jpeg', 0.95);
+            }
+
+            // --- LOGIKA SMART ASPECT RATIO KAMERA ---
+
+            let activeHoles = []; // Array untuk menyimpan ukuran tiap kotak foto
+            let currentTakeIndex = 0; // Melacak sedang di Take ke-berapa
+
+            // 1. Mempersiapkan Sesi saat layar Kamera dibuka
+            function setupCameraSession() {
+                const sessionId = localStorage.getItem('orangeReceiptSessionFrame');
+                if (!sessionId) return;
+
+                const library = JSON.parse(localStorage.getItem('orangeReceiptLibrary')) || [];
+                const tpl = library.find(item => item.id === sessionId);
+                if (!tpl) return;
+
+                activeHoles = [];
+                currentTakeIndex = 0;
+
+                // Kumpulkan data lebar dan tinggi setiap lubang foto dari template
+                if (tpl.mode === 'manual') {
+                    activeHoles = tpl.elements.filter(el => el.type === 'photo');
+                } else {
+                    for (let i = 0; i < tpl.autoSettings.total; i++) {
+                        activeHoles.push({
+                            w: tpl.autoSettings.w,
+                            h: tpl.autoSettings.h
+                        });
+                    }
+                }
+
+                // Mulai terapkan ukuran untuk Take 1
+                updateSmartViewfinder();
+            }
+
+            // 2. Memperbarui Kotak Terang di Layar
+            function updateSmartViewfinder() {
+                if (activeHoles.length === 0) return;
+
+                const currentBox = activeHoles[currentTakeIndex];
+                const viewfinder = document.getElementById('smart-viewfinder');
+                const stepIndicator = document.getElementById('cam-step-indicator');
+
+                // Terapkan rasio aspek (Width / Height)
+                viewfinder.style.aspectRatio = `${currentBox.w} / ${currentBox.h}`;
+
+                // Logika Pembesaran: Agar tidak melebar ke luar layar monitor
+                if (currentBox.w >= currentBox.h) {
+                    // Jika Landscape/Persegi: Lebarkan penuh ke samping
+                    viewfinder.style.width = '85%';
+                    viewfinder.style.height = 'auto';
+                } else {
+                    // Jika Portrait: Tinggikan penuh ke atas
+                    viewfinder.style.height = '85%';
+                    viewfinder.style.width = 'auto';
+                    viewfinder.style.maxWidth = '85%';
+                }
+
+                // Update teks di pojok kanan atas
+                stepIndicator.innerText = `Take ${currentTakeIndex + 1} / ${activeHoles.length}`;
+            }
+        </script>
+
+</body>
+
+</html>

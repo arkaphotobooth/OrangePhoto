@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orange Receipt - Full Journey</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF7B00">
     <link
         href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;800;900&family=Quicksand:wght@500;700;900&display=swap"
         rel="stylesheet">
@@ -1597,8 +1599,7 @@
             // 1. Saat jari MENYENTUH layar (Pointer Down)
             standbyScreenEl.addEventListener('pointerdown', (e) => {
 
-                // PANGGIL FULLSCREEN: Begitu pelanggan menyentuh layar pertama kali, aplikasi langsung mode penuh!
-                enterFullscreen();
+                // (Baris enterFullscreen() sudah dihapus dari sini agar tidak mengganggu di PC)
 
                 orangeWrap.classList.remove('hovering');
                 orangeWrap.classList.add('pressed');

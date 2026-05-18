@@ -1771,7 +1771,7 @@
                 return canvas.toDataURL('image/jpeg', 0.9);
             }
 
-            // --- 3. LAYAR PREVIEW ADAPTIF (MENYESUAIKAN TINGGI RESOLUSI) ---
+            // --- 3. LAYAR PREVIEW ADAPTIF (MENAMPILKAN TEMPLATE UTUH) ---
             function renderSelectionScreen() {
                 navTo('screen-selection');
                 const thumbnailsContainer = document.getElementById('selection-thumbnails');
@@ -1781,36 +1781,52 @@
                 const sessionId = localStorage.getItem('orangeReceiptSessionFrame');
                 const library = JSON.parse(localStorage.getItem('orangeReceiptLibrary')) || [];
                 const tpl = library.find(item => item.id === sessionId);
+
                 const directBgLink = tpl ? tpl.background : '';
-
-                // Gunakan ukuran dinamis dari template
                 const paperW = tpl.baseWidth || 576;
-                const paperH = tpl.baseHeight || 1382;
-                const hole = activeHoles[0];
+                const paperH = tpl.baseHeight || 1200;
 
-                const pctX = (hole.x / paperW) * 100;
-                const pctY = (hole.y / paperH) * 100;
-                const pctW = (hole.w / paperW) * 100;
-                const pctH = (hole.h / paperH) * 100;
-
-                const templateLayer = document.getElementById('master-template-layer');
-                const photoLayer = document.getElementById('master-photo-layer');
                 const previewBox = document.getElementById('master-preview-box');
 
-                // Sesuaikan kotak preview secara dinamis mengikuti cetak biru desain
+                // Atur rasio kanvas utama
                 previewBox.style.aspectRatio = `${paperW} / ${paperH}`;
+                previewBox.style.backgroundImage = directBgLink ? `url('${directBgLink}')` : 'none';
+                previewBox.style.backgroundSize = '100% 100%';
+                previewBox.style.containerType = 'inline-size'; // Wajib untuk menyesuaikan font teks (CQI)
 
-                templateLayer.style.backgroundImage = directBgLink ? `url('${directBgLink}')` : 'none';
+                // RENDER SELURUH ELEMEN DESAIN!
+                let elementsHtml = '';
+                let photoIndexTracker = 0;
 
-                photoLayer.style.left = `${pctX}%`;
-                photoLayer.style.top = `${pctY}%`;
-                photoLayer.style.width = `${pctW}%`;
-                photoLayer.style.height = `${pctH}%`;
+                if (tpl.elements && tpl.elements.length > 0) {
+                    tpl.elements.forEach(el => {
+                        let extraStyle = `position: absolute; left: ${(el.x / paperW) * 100}%; top: ${(el.y / paperH) * 100}%; width: ${(el.w / paperW) * 100}%; height: ${(el.h / paperH) * 100}%;`;
 
+                        if (el.type === 'photo') {
+                            // Slot kosong yang nanti akan diisi foto pilihan pelanggan
+                            elementsHtml += `<div class="preview-photo-slot" style="${extraStyle} background-color: #eee; background-size: cover; background-position: center; border-radius: 4px;"></div>`;
+                            photoIndexTracker++;
+                        } else if (el.type === 'text') {
+                            let justify = el.align === 'center' ? 'center' : (el.align === 'right' ? 'flex-end' : 'flex-start');
+                            elementsHtml += `<div style="${extraStyle} display: flex; align-items: flex-start; justify-content: ${justify}; text-align: ${el.align}; font-family: ${el.font}; color: ${el.color}; font-size: ${(el.size / paperW * 100)}cqi; font-weight: bold; white-space: pre-wrap;">${el.content}</div>`;
+                        } else if (el.type === 'image') {
+                            elementsHtml += `<div style="${extraStyle} background-image: url('${el.base64}'); background-size: contain; background-repeat: no-repeat;"></div>`;
+                        } else if (el.type === 'line') {
+                            elementsHtml += `<div style="${extraStyle} background: ${el.color};"></div>`;
+                        } else if (el.type === 'qr') {
+                            elementsHtml += `<div style="${extraStyle} border: 2px dashed #888; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #888; font-size: 0.8rem;">QR</div>`;
+                        }
+                    });
+                }
+
+                // Timpa isi HTML box preview dengan elemen hasil rakitan
+                previewBox.innerHTML = elementsHtml;
+
+                // Tampilkan 3 Foto Thumbnail di kanan
                 capturedPhotos.forEach((dataUrl, index) => {
                     const thumb = document.createElement('div');
                     thumb.style.width = '100%';
-                    thumb.style.aspectRatio = `${hole.w} / ${hole.h}`;
+                    thumb.style.aspectRatio = `1 / 1`;
                     thumb.style.backgroundImage = `url(${dataUrl})`;
                     thumb.style.backgroundSize = 'cover';
                     thumb.style.backgroundPosition = 'center';
@@ -1820,7 +1836,11 @@
                     thumb.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
 
                     thumb.onclick = () => {
-                        photoLayer.style.backgroundImage = `url(${dataUrl})`;
+                        // Saat diklik, isi semua slot foto di template dengan foto ini
+                        document.querySelectorAll('.preview-photo-slot').forEach(slot => {
+                            slot.style.backgroundImage = `url(${dataUrl})`;
+                        });
+                        // Atur efek visual pilihan
                         document.querySelectorAll('#selection-thumbnails > div').forEach(d => {
                             d.style.borderColor = 'transparent';
                             d.style.transform = 'scale(1)';
@@ -2740,7 +2760,7 @@
             let capturedPhotos = [];
             let selectedPhotoIndex = null;
 
-            // 2. Siklus Jepretan (The Snapshot Loop)
+            // 2. Siklus Jepretan (Timing Flash Diperbaiki!)
             function startPhotoSession() {
                 if (activeHoles.length === 0) return;
                 const currentBox = activeHoles[0];
@@ -2766,24 +2786,27 @@
                             clearInterval(timer);
                             countdownEl.style.display = 'none';
 
-                            // 1. AKTIFKAN LAYAR PUTIH (Menyamarkan Lag Kamera Asli)
+                            // 1. JEPRET DULU SEBELUM FLASH: Agar sensor lensa mendapat cahaya ruangan yang normal!
+                            const photoData = await executeRealPhotography(currentBox.w, currentBox.h);
+
+                            // 2. TEMBAKKAN FLASH PUTIH (Menyamarkan proses kompresi & transisi)
                             flashEl.style.opacity = '1';
 
-                            // 2. JAGA WAKTU: Tunggu sampai foto benar-benar selesai dijepret & dikompres!
-                            const photoData = await executeRealPhotography(currentBox.w, currentBox.h);
                             if (photoData) capturedPhotos.push(photoData);
 
-                            // 3. FOTO SELESAI: Matikan Layar Putih!
-                            flashEl.style.opacity = '0';
-                            take++;
+                            // 3. MATIKAN FLASH (Setelah 250 milidetik agar terasa seperti kilat asli)
+                            setTimeout(() => {
+                                flashEl.style.opacity = '0';
+                                take++;
 
-                            // 4. Lanjut ke Take Berikutnya
-                            if (take <= 3) {
-                                setTimeout(runTake, 800); // Beri nafas 0.8 detik sebelum timer baru mulai
-                            } else {
-                                stopCamera();
-                                renderSelectionScreen();
-                            }
+                                // 4. Lanjut ke Take Berikutnya
+                                if (take <= 3) {
+                                    setTimeout(runTake, 600); // Beri nafas sedikit sebelum timer baru
+                                } else {
+                                    stopCamera();
+                                    renderSelectionScreen();
+                                }
+                            }, 250);
                         }
                     }, 1000);
                 }
@@ -2928,7 +2951,16 @@
                 stepIndicator.innerText = `Take ${currentTakeIndex + 1} / ${activeHoles.length}`;
             }
         </script>
-
+        <script>
+            // Mendaftarkan Service Worker untuk mengaktifkan fitur "Add to Home Screen" Fullscreen
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => console.log('Service Worker sukses terdaftar!', reg.scope))
+                        .catch(err => console.error('Service Worker gagal terdaftar:', err));
+                });
+            }
+        </script>
 </body>
 
 </html>
